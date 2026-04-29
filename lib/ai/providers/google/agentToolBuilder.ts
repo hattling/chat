@@ -511,7 +511,8 @@ export class AgentToolBuilder {
     if (
       gitMcpAgent &&
       gitMcpAgentConfig?.enabled &&
-      this.config.tools?.gitMcpAgent?.enabled
+      this.config.tools?.gitMcpAgent?.enabled &&
+      gitMcpAgent.isReady()
     ) {
       // Check if tool description is missing and throw error
       if (!this.config.tools.gitMcpAgent.description) {

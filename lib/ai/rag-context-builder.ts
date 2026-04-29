@@ -32,6 +32,8 @@ export type RagSkippedReason =
   | "empty_query"
   | "missing_credentials"
   | "no_matches"
+  | "index_not_found"
+  | "unauthorized"
   | "error";
 
 export type RagContextResult = {
@@ -240,6 +242,10 @@ async function queryPinecone(
       timeoutMs
     );
   } catch (error) {
+    // Don't retry on auth failures — the fallback endpoint won't help.
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("(401)")) throw error;
+
     console.warn(
       "[RAG] Pinecone /query failed, retrying with /vectors/query:",
       error
@@ -491,14 +497,29 @@ export async function buildRagContext(
       queryPayload.filter = filter;
     }
 
-    const response = await queryPinecone(
+    let response = await queryPinecone(
       pineconeHost,
       pineconeApiKey,
       queryPayload,
       timeoutMs
     );
-    const rawMatches = extractMatches(response);
-    const normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
+    let rawMatches = extractMatches(response);
+    let normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
+
+    // If the repo-name filter produced no matches, retry with only the base filter
+    // (chunk_type + embedded, no repo_name restriction). This handles the common case
+    // where the ingestion script tagged all files with the superproject name (e.g.
+    // "webroot") rather than individual submodule repo names.
+    if (normalized.length === 0 && repoNames && repoNames.length > 0) {
+      console.log(
+        `[RAG] No matches for repo filter ${JSON.stringify(repoNames)}, retrying across all indexed repos`
+      );
+      const broadPayload = { ...queryPayload, filter: buildPineconeFilter() };
+      response = await queryPinecone(pineconeHost, pineconeApiKey, broadPayload, timeoutMs);
+      rawMatches = extractMatches(response);
+      normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
+    }
+
     const context = formatRagContext(
       normalized,
       maxContextChars,
@@ -520,15 +541,21 @@ export async function buildRagContext(
       sources: normalized,
     };
   } catch (error) {
-    console.warn(
-      "[RAG] Failed to build retrieval context:",
-      error instanceof Error ? error.message : error
-    );
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.warn("[RAG] Failed to build retrieval context:", errorMsg);
+
+    // Distinguish "index doesn't exist yet" from other failures so the UI can
+    // show actionable setup guidance instead of a generic error.
+    const isIndexNotFound =
+      errorMsg.includes("NOT_FOUND") ||
+      (errorMsg.includes("(404)") && errorMsg.includes("/indexes/"));
+    const isUnauthorized = errorMsg.includes("(401)");
+
     return {
       context: "",
       sourceCount: 0,
       sources: [],
-      skippedReason: "error",
+      skippedReason: isUnauthorized ? "unauthorized" : isIndexNotFound ? "index_not_found" : "error",
     };
   }
 }

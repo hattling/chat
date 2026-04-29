@@ -428,6 +428,48 @@ export function Chat({
           </div>
         )}
 
+        {ragSkippedReason === "unauthorized" && !ragDisabled && (
+          <div className="mx-auto w-full max-w-4xl px-2 pb-2 md:px-4">
+            <div className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-200">
+              <span className="font-medium">Pinecone key unauthorized.</span>{" "}
+              The <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">PINECONE_API_KEY</code> in{" "}
+              <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">docker/.env</code>{" "}
+              is not authorized for this index. Copy the key from{" "}
+              <a
+                href="https://app.pinecone.io"
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-medium hover:no-underline"
+              >
+                app.pinecone.io
+              </a>{" "}
+              → API Keys, update <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">docker/.env</code>, and restart the server.
+            </div>
+          </div>
+        )}
+
+        {ragSkippedReason === "index_not_found" && !ragDisabled && (
+          <div className="mx-auto w-full max-w-4xl px-2 pb-2 md:px-4">
+            <div className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-200">
+              <span className="font-medium">Pinecone index not found.</span>{" "}
+              Create a <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">repo-chunks</code> index
+              (1024 dimensions, cosine metric) at{" "}
+              <a
+                href="https://app.pinecone.io"
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-medium hover:no-underline"
+              >
+                app.pinecone.io
+              </a>
+              , add <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">PINECONE_INDEX_HOST</code> to{" "}
+              <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">docker/.env</code>, then run{" "}
+              <code className="rounded bg-amber-100 px-0.5 dark:bg-amber-900">python chat/ingestion/vector_db_sync.py --reindex-all</code>{" "}
+              to populate it with your repo vectors.
+            </div>
+          </div>
+        )}
+
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (
             <MultimodalInput

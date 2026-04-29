@@ -1,7 +1,6 @@
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Toaster } from "sonner";
 import { NextDevToolsOffset } from "@/components/next-dev-tools-offset";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -58,14 +57,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script
-          id="theme-color"
-          strategy="beforeInteractive"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: "Required"
-          dangerouslySetInnerHTML={{
-            __html: THEME_COLOR_SCRIPT,
-          }}
-        />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: theme script must run before paint */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_COLOR_SCRIPT }} />
       </head>
       <body className="antialiased">
         <ThemeProvider

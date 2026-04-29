@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       ragDisabled = false,
     } = requestBody;
 
+    console.log(`[RAG] ragDisabled=${ragDisabled} selectedRepos=${JSON.stringify(selectedRepos)}`);
+
     // Authenticate user. If Supabase Auth is unreachable we still allow the
     // request through so the user can interact with models without DB.
     try {
@@ -360,8 +362,9 @@ export async function POST(request: Request) {
       chatAgent.setApiKey(serverApiKey);
     }
 
-    // Set GitHub PAT if provided (for GitHub MCP agent)
-    if (githubPAT?.trim()) {
+    // Set GitHub PAT only when no CodeChat sources are selected (ragDisabled = true).
+    // When sources are checked, RAG handles code context — GitHub MCP should not compete.
+    if (githubPAT?.trim() && ragDisabled) {
       chatAgent.setGitHubPAT(githubPAT);
       console.log("🐙 [GITHUB-PAT] GitHub PAT provided for MCP agent");
     }
