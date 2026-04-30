@@ -1,6 +1,14 @@
+<<<<<<< HEAD
 import { loadEnvironment } from "./lib/env-loader";
 
 loadEnvironment();
+=======
+import { config } from "dotenv";
+
+config({
+  path: ".env.local",
+});
+>>>>>>> upstream/main
 
 export default {
   schema: "./lib/db/drizzle-schema.ts",

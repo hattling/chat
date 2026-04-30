@@ -529,8 +529,11 @@ describe("Chat Query Tests", () => {
         outputTokens: 200,
         totalTokens: 300,
         cost: 0.003,
+<<<<<<< HEAD
         inputTokenDetails: { noCacheTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
         outputTokenDetails: { textTokens: 0, reasoningTokens: 0 },
+=======
+>>>>>>> upstream/main
       };
       const mockUpdateResult = { rowCount: 1 };
 
@@ -554,8 +557,11 @@ describe("Chat Query Tests", () => {
         outputTokens: 200,
         totalTokens: 300,
         cost: 0.003,
+<<<<<<< HEAD
         inputTokenDetails: { noCacheTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
         outputTokenDetails: { textTokens: 0, reasoningTokens: 0 },
+=======
+>>>>>>> upstream/main
       };
       const dbError = new Error("Update failed");
 

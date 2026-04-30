@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 import postgres from "postgres";
 import { loadEnvironment } from "../env-loader";
 
 loadEnvironment();
+=======
+import { config } from "dotenv";
+import postgres from "postgres";
+
+config({
+  path: ".env.local",
+});
+>>>>>>> upstream/main
 
 type VerificationResult = {
   category: string;

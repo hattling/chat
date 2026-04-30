@@ -57,6 +57,7 @@ export const apiKeyHelpers = {
   },
 
   /**
+<<<<<<< HEAD
    * Returns the raw "rsa:<base64>" blob for the provider if one exists in
    * localStorage, otherwise null.  Use when getAPIKey() returns null but you
    * need to send the key to the server for decryption.
@@ -73,6 +74,8 @@ export const apiKeyHelpers = {
   },
 
   /**
+=======
+>>>>>>> upstream/main
    * Validate API key format (basic validation)
    */
   validateFormat: (
@@ -113,10 +116,13 @@ export const apiKeyHelpers = {
           };
         }
         break;
+<<<<<<< HEAD
       case "pinecone":
       case "voyage":
         // No format prefix to enforce — accept any non-empty trimmed key.
         break;
+=======
+>>>>>>> upstream/main
       default:
         return { valid: false, error: "Unknown provider" };
     }
@@ -304,6 +310,7 @@ export const storageHelpers = {
   cleanup: (): void => {
     localStorageManager.cleanupOnLogout();
   },
+<<<<<<< HEAD
 
   /**
    * Migrate keys from legacy formats (aPro, ${aiType}_api_key) into settings_api-keys.
@@ -335,6 +342,8 @@ export const storageHelpers = {
    */
   getDecryptedKeysForExport: (): Record<string, string> =>
     localStorageManager.getDecryptedKeysForExport(),
+=======
+>>>>>>> upstream/main
 };
 
 /**

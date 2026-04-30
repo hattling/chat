@@ -9,7 +9,10 @@ import {
 } from "@/lib/logging/activity-logger";
 import { getAdminConfig } from "../db/queries/admin";
 import { getActiveModelsByProvider } from "../db/queries/model-config";
+<<<<<<< HEAD
 import { FALLBACK_GOOGLE_CHAT_AGENT_CONFIG } from "./fallback-config";
+=======
+>>>>>>> upstream/main
 import { GoogleChatAgent } from "./providers/google/chat-agent";
 
 // Simple agent config interface
@@ -127,6 +130,7 @@ export class ChatAgentResolver {
     });
 
     try {
+<<<<<<< HEAD
       // Load Google chat agent config from database. If the DB is unreachable
       // we fall back to a hardcoded config so the chat route can still stream
       // model responses without persistence.
@@ -175,6 +179,34 @@ export class ChatAgentResolver {
             allowedFileTypes: [],
           }))
         : FALLBACK_GOOGLE_CHAT_AGENT_CONFIG.availableModels;
+=======
+      // Load Google chat agent config from database
+      const adminConfig = await getAdminConfig({
+        configKey: "chat_model_agent_google",
+      });
+
+      if (!adminConfig?.configData) {
+        throw new Error("Google chat agent configuration not found");
+      }
+
+      const configData = adminConfig.configData as any;
+
+      // Load model configurations from model_config table
+      const models = await getActiveModelsByProvider("google");
+
+      // Convert database models to availableModels array
+      const availableModels = models.map((model) => ({
+        id: model.modelId,
+        name: model.name,
+        description: model.description || "",
+        enabled: model.isActive !== false,
+        isDefault: model.isDefault || false,
+        thinkingEnabled: model.thinkingEnabled !== false,
+        supportsThinkingMode: model.thinkingEnabled !== false,
+        fileInputEnabled: false, // TODO: Add to model_config table
+        allowedFileTypes: [],
+      }));
+>>>>>>> upstream/main
 
       // Find default model
       const defaultModel = availableModels.find((m) => m.isDefault);

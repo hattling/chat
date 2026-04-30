@@ -32,8 +32,11 @@ export type RagSkippedReason =
   | "empty_query"
   | "missing_credentials"
   | "no_matches"
+<<<<<<< HEAD
   | "index_not_found"
   | "unauthorized"
+=======
+>>>>>>> upstream/main
   | "error";
 
 export type RagContextResult = {
@@ -47,8 +50,11 @@ type BuildRagContextParams = {
   queryText: string;
   limitToRepoName?: string;
   limitToRepoNames?: string[];
+<<<<<<< HEAD
   pineconeApiKey?: string;
   voyageApiKey?: string;
+=======
+>>>>>>> upstream/main
 };
 
 const DEFAULT_INDEX_NAME = "repo-chunks";
@@ -242,10 +248,13 @@ async function queryPinecone(
       timeoutMs
     );
   } catch (error) {
+<<<<<<< HEAD
     // Don't retry on auth failures — the fallback endpoint won't help.
     const msg = error instanceof Error ? error.message : String(error);
     if (msg.includes("(401)")) throw error;
 
+=======
+>>>>>>> upstream/main
     console.warn(
       "[RAG] Pinecone /query failed, retrying with /vectors/query:",
       error
@@ -420,11 +429,16 @@ export async function buildRagContext(
     };
   }
 
+<<<<<<< HEAD
   // Server `.env` wins; fall back to caller-provided keys (e.g. browser-cached).
   const pineconeApiKey =
     process.env.PINECONE_API_KEY?.trim() || params.pineconeApiKey?.trim();
   const voyageApiKey =
     process.env.VOYAGE_API_KEY?.trim() || params.voyageApiKey?.trim();
+=======
+  const pineconeApiKey = process.env.PINECONE_API_KEY?.trim();
+  const voyageApiKey = process.env.VOYAGE_API_KEY?.trim();
+>>>>>>> upstream/main
 
   if (!pineconeApiKey || !voyageApiKey) {
     return {
@@ -497,12 +511,17 @@ export async function buildRagContext(
       queryPayload.filter = filter;
     }
 
+<<<<<<< HEAD
     let response = await queryPinecone(
+=======
+    const response = await queryPinecone(
+>>>>>>> upstream/main
       pineconeHost,
       pineconeApiKey,
       queryPayload,
       timeoutMs
     );
+<<<<<<< HEAD
     let rawMatches = extractMatches(response);
     let normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
 
@@ -520,6 +539,10 @@ export async function buildRagContext(
       normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
     }
 
+=======
+    const rawMatches = extractMatches(response);
+    const normalized = normalizeMatches(rawMatches, scoreThreshold).slice(0, topK);
+>>>>>>> upstream/main
     const context = formatRagContext(
       normalized,
       maxContextChars,
@@ -541,6 +564,7 @@ export async function buildRagContext(
       sources: normalized,
     };
   } catch (error) {
+<<<<<<< HEAD
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.warn("[RAG] Failed to build retrieval context:", errorMsg);
 
@@ -551,11 +575,21 @@ export async function buildRagContext(
       (errorMsg.includes("(404)") && errorMsg.includes("/indexes/"));
     const isUnauthorized = errorMsg.includes("(401)");
 
+=======
+    console.warn(
+      "[RAG] Failed to build retrieval context:",
+      error instanceof Error ? error.message : error
+    );
+>>>>>>> upstream/main
     return {
       context: "",
       sourceCount: 0,
       sources: [],
+<<<<<<< HEAD
       skippedReason: isUnauthorized ? "unauthorized" : isIndexNotFound ? "index_not_found" : "error",
+=======
+      skippedReason: "error",
+>>>>>>> upstream/main
     };
   }
 }

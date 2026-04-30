@@ -12,6 +12,7 @@ import type {
   StorageQuotaInfo,
 } from "./types";
 import { StorageErrorType } from "./types";
+<<<<<<< HEAD
 import {
   decryptValue,
   encryptValue,
@@ -19,6 +20,8 @@ import {
   isEncrypted,
   isServerEncrypted,
 } from "./crypto";
+=======
+>>>>>>> upstream/main
 
 class LocalStorageManager implements StorageManager {
   private static instance: LocalStorageManager;
@@ -32,6 +35,7 @@ class LocalStorageManager implements StorageManager {
   };
   private cleanupListeners: (() => void)[] = [];
 
+<<<<<<< HEAD
   // In-memory plaintext cache — populated by initCrypto() and kept in sync by
   // setAPIKey / removeAPIKey.  getAPIKey() reads from this cache so callers
   // always receive plaintext and do not need to handle async decryption.
@@ -41,6 +45,8 @@ class LocalStorageManager implements StorageManager {
   // localStorage but can only be decrypted server-side.  Populated by initCrypto().
   private _serverEncryptedProviders: Set<string> = new Set();
 
+=======
+>>>>>>> upstream/main
   private constructor() {
     this.setupAutoCleanup();
   }
@@ -190,6 +196,7 @@ class LocalStorageManager implements StorageManager {
   }
 
   /**
+<<<<<<< HEAD
    * Get API key for a specific provider.
    * Returns from the in-memory plaintext cache (populated by initCrypto()).
    * Falls back to raw storage only when the cache has not been initialized yet
@@ -257,6 +264,30 @@ class LocalStorageManager implements StorageManager {
             this.setStorageData("api-keys", apiKeys);
           });
       });
+=======
+   * Get API key for a specific provider
+   */
+  getAPIKey(provider: APIProvider): string | null {
+    const apiKeys =
+      this.getStorageData<LocalStorageSchema["api-keys"]>("api-keys");
+    console.log("🗄️ [DEBUG] LocalStorage API keys data:", {
+      hasApiKeysData: !!apiKeys,
+      availableProviders: apiKeys ? Object.keys(apiKeys) : [],
+      requestedProvider: provider,
+      hasRequestedKey: !!apiKeys?.[provider],
+    });
+    return apiKeys?.[provider] || null;
+  }
+
+  /**
+   * Set API key for a specific provider
+   */
+  setAPIKey(provider: APIProvider, key: string): void {
+    const apiKeys =
+      this.getStorageData<LocalStorageSchema["api-keys"]>("api-keys") || {};
+    apiKeys[provider] = key;
+    this.setStorageData("api-keys", apiKeys);
+>>>>>>> upstream/main
 
     this.emitEvent({
       type: "api-key-updated",
@@ -269,7 +300,10 @@ class LocalStorageManager implements StorageManager {
    * Remove API key for a specific provider
    */
   removeAPIKey(provider: APIProvider): void {
+<<<<<<< HEAD
     this._plaintextCache.delete(provider);
+=======
+>>>>>>> upstream/main
     const apiKeys =
       this.getStorageData<LocalStorageSchema["api-keys"]>("api-keys");
     if (apiKeys?.[provider]) {
@@ -285,6 +319,7 @@ class LocalStorageManager implements StorageManager {
   }
 
   /**
+<<<<<<< HEAD
    * Migrate API keys from legacy localStorage formats into settings_api-keys.
    * - Reads `aPro` (requests/engine format): { GEMINI_API_KEY: "...", ... }
    * - Reads per-key entries: gemini_api_key, claude_api_key, openai_api_key, xai_api_key
@@ -489,6 +524,11 @@ class LocalStorageManager implements StorageManager {
   getGitHubPAT(): string | null {
     const fromApiKeys = this.getAPIKey("github");
     if (fromApiKeys) return fromApiKeys;
+=======
+   * Get GitHub Personal Access Token
+   */
+  getGitHubPAT(): string | null {
+>>>>>>> upstream/main
     const integrations =
       this.getStorageData<LocalStorageSchema["integrations"]>("integrations");
     return integrations?.github?.token || null;

@@ -33,7 +33,11 @@ import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
+<<<<<<< HEAD
 import { toast } from "sonner";
+=======
+import { toast } from "./toast";
+>>>>>>> upstream/main
 import type { VisibilityType } from "./visibility-selector";
 
 export function Chat({
@@ -64,7 +68,10 @@ export function Chat({
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
+<<<<<<< HEAD
   const [ragSkippedReason, setRagSkippedReason] = useState<string | null>(null);
+=======
+>>>>>>> upstream/main
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
 
@@ -72,12 +79,15 @@ export function Chat({
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
+<<<<<<< HEAD
   // Populate the in-memory key cache so getAPIKey() returns plaintext
   // before the user sends their first message.
   useEffect(() => {
     storage.general.initCrypto().catch(console.error);
   }, []);
 
+=======
+>>>>>>> upstream/main
   // RAG repo selection state — persists across sessions
   const [ragSelectedRepos, setRagSelectedRepos] = useLocalStorage<string[]>(
     "rag-selected-repos",
@@ -89,6 +99,7 @@ export function Chat({
     ragSelectedReposRef.current = ragSelectedRepos;
   }, [ragSelectedRepos]);
 
+<<<<<<< HEAD
   // When the user explicitly unchecks every source, skip RAG entirely on the server.
   const [ragDisabled] = useLocalStorage<boolean>("rag-disabled", false);
   const ragDisabledRef = useRef(ragDisabled);
@@ -97,6 +108,8 @@ export function Chat({
     ragDisabledRef.current = ragDisabled;
   }, [ragDisabled]);
 
+=======
+>>>>>>> upstream/main
   // Fetch available repos for the selector
   const { repos: availableRepos, isLoading: reposLoading } = useRepos();
 
@@ -118,16 +131,22 @@ export function Chat({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
+<<<<<<< HEAD
         // Get Google API key — plaintext from session cache if available,
         // otherwise the RSA-encrypted blob for server-side decryption.
         const googleApiKey = storage.apiKeys.get("google");
         const googleApiKeyEnc = !googleApiKey
           ? storage.apiKeys.getEncryptedBlob("google")
           : null;
+=======
+        // Get Google API key from localStorage
+        const googleApiKey = storage.apiKeys.get("google");
+>>>>>>> upstream/main
 
         // Get GitHub PAT from localStorage (for GitHub MCP agent)
         const githubPAT = storage.github.getToken();
 
+<<<<<<< HEAD
         // RAG retrieval credentials — Pinecone (vector DB) and Voyage (embeddings).
         // Fall back to RSA-encrypted blobs when the plaintext cache is empty.
         const pineconeApiKey = storage.apiKeys.get("pinecone");
@@ -139,6 +158,8 @@ export function Chat({
           ? storage.apiKeys.getEncryptedBlob("voyage")
           : null;
 
+=======
+>>>>>>> upstream/main
         // Extract thinking mode from the last message's experimental metadata
         const lastMessage = request.messages.at(-1);
         const thinkingEnabled =
@@ -152,7 +173,10 @@ export function Chat({
           selectedVisibilityType: visibilityType,
           thinkingEnabled,
           selectedRepos: ragSelectedReposRef.current,
+<<<<<<< HEAD
           ragDisabled: ragDisabledRef.current,
+=======
+>>>>>>> upstream/main
           ...request.body,
         };
 
@@ -160,13 +184,17 @@ export function Chat({
         const headers: Record<string, string> = {};
         if (googleApiKey) {
           headers["x-google-api-key"] = googleApiKey;
+<<<<<<< HEAD
         } else if (googleApiKeyEnc) {
           // RSA blob — server decrypts it before calling the AI provider.
           headers["x-google-api-key-enc"] = googleApiKeyEnc;
+=======
+>>>>>>> upstream/main
         }
         if (githubPAT) {
           headers["x-github-pat"] = githubPAT;
         }
+<<<<<<< HEAD
         if (pineconeApiKey) {
           headers["x-pinecone-api-key"] = pineconeApiKey;
         } else if (pineconeApiKeyEnc) {
@@ -177,6 +205,8 @@ export function Chat({
         } else if (voyageApiKeyEnc) {
           headers["x-voyage-api-key-enc"] = voyageApiKeyEnc;
         }
+=======
+>>>>>>> upstream/main
 
         return {
           body: requestBody,
@@ -189,16 +219,20 @@ export function Chat({
       if (dataPart.type === "data-usage") {
         setUsage(dataPart.data);
       }
+<<<<<<< HEAD
       if (dataPart.type === "data-rag-status") {
         const reason = (dataPart.data as { skippedReason?: string } | null)
           ?.skippedReason ?? null;
         setRagSkippedReason(reason);
       }
+=======
+>>>>>>> upstream/main
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
+<<<<<<< HEAD
       console.error("💥 [DEBUG] Chat error occurred:", error);
 
       const messageText =
@@ -224,6 +258,16 @@ export function Chat({
         clearError();
         return;
       }
+=======
+      console.error("💥 [DEBUG] Chat error occurred:", {
+        error,
+        errorType: error.constructor.name,
+        message: error.message,
+        stack: error.stack,
+      });
+
+      const messageText = error instanceof Error ? error.message : String(error);
+>>>>>>> upstream/main
 
       if (messageText.includes("thinking is not supported by this model")) {
         const thinkingNotSupportedMessage = "The selected model does not support thinking mode. Please choose a different model or disable thinking mode.";
@@ -286,6 +330,7 @@ export function Chat({
       }
 
       if (error instanceof ChatSDKError) {
+<<<<<<< HEAD
         if (error.message?.includes("AI Gateway requires a valid credit card")) {
           setShowCreditCardAlert(true);
         } else {
@@ -299,6 +344,48 @@ export function Chat({
         }
       } else {
         toast.error(messageText || "An unexpected error occurred");
+=======
+        console.log("🔍 [DEBUG] ChatSDKError details:", {
+          message: error.message,
+        });
+
+        // Check if it's a credit card error
+        if (
+          error.message?.includes("AI Gateway requires a valid credit card")
+        ) {
+          setShowCreditCardAlert(true);
+        } else {
+          toast({
+            type: "error",
+            description: error.message,
+          });
+        }
+      } else if (error instanceof Error) {
+        console.log("🔍 [DEBUG] Generic Error details:", {
+          name: error.name,
+          message: error.message,
+        });
+
+        // Handle API key errors
+        if (error.message?.includes("Google API key is required")) {
+          toast({
+            type: "error",
+            description:
+              "Please configure your Google API key in Settings to use the chat.",
+          });
+        } else {
+          toast({
+            type: "error",
+            description: error.message,
+          });
+        }
+      } else {
+        console.log("🔍 [DEBUG] Unknown error type:", typeof error, error);
+        toast({
+          type: "error",
+          description: "An unexpected error occurred",
+        });
+>>>>>>> upstream/main
       }
 
       setDataStream([]);
@@ -392,7 +479,11 @@ export function Chat({
 
   return (
     <>
+<<<<<<< HEAD
       <div className="overscroll-behavior-contain flex h-[calc(100dvh-73px)] min-w-0 touch-pan-y flex-col bg-background">
+=======
+      <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
+>>>>>>> upstream/main
         <ChatHeader
           chatId={id}
           isReadonly={isReadonly}
@@ -411,6 +502,7 @@ export function Chat({
           votes={votes}
         />
 
+<<<<<<< HEAD
         {ragSkippedReason === "missing_credentials" && !ragDisabled && (
           <div className="mx-auto w-full max-w-4xl px-2 pb-2 md:px-4">
             <div className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-200">
@@ -470,15 +562,27 @@ export function Chat({
           </div>
         )}
 
+=======
+>>>>>>> upstream/main
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (
             <MultimodalInput
               attachments={attachments}
+<<<<<<< HEAD
+=======
+              availableRepos={availableRepos}
+              availableReposLoading={reposLoading}
+>>>>>>> upstream/main
               chatId={id}
               githubPAT={storage.github.getToken() || undefined}
               input={input}
               messages={messages}
               onModelChange={setCurrentModelId}
+<<<<<<< HEAD
+=======
+              onRagSelectedReposChange={setRagSelectedRepos}
+              ragSelectedRepos={ragSelectedRepos}
+>>>>>>> upstream/main
               selectedModelId={currentModelId}
               selectedVisibilityType={visibilityType}
               sendMessage={sendMessage}
