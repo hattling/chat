@@ -98,6 +98,7 @@ export type APIProvider =
   | "mistral"
   | "perplexity"
   | "deepseek"
+  | "pollinations"
   | "discord"
   | "github"
   | "pinecone"
