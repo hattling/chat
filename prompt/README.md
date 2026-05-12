@@ -14,12 +14,12 @@ Scope: everything inside the rounded prompt container from the chat app, includi
 
 The upstream implementation currently lives in:
 
-- [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:45)
-- [chat/components/elements/prompt-input.tsx](/Users/Loren/Documents/webroot/chat/components/elements/prompt-input.tsx:24)
-- [chat/components/model-selector.tsx](/Users/Loren/Documents/webroot/chat/components/model-selector.tsx:34)
-- [chat/components/conditional-file-input.tsx](/Users/Loren/Documents/webroot/chat/components/conditional-file-input.tsx:19)
-- [chat/components/thinking-mode-toggle.tsx](/Users/Loren/Documents/webroot/chat/components/thinking-mode-toggle.tsx:16)
-- [chat/lib/github-components/github-repo-modal.tsx](/Users/Loren/Documents/webroot/chat/lib/github-components/github-repo-modal.tsx:29)
+- [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:45)
+- [chat/components/elements/prompt-input.tsx](/chat/components/elements/prompt-input.tsx:24)
+- [chat/components/model-selector.tsx](/chat/components/model-selector.tsx:34)
+- [chat/components/conditional-file-input.tsx](/chat/components/conditional-file-input.tsx:19)
+- [chat/components/thinking-mode-toggle.tsx](/chat/components/thinking-mode-toggle.tsx:16)
+- [chat/lib/github-components/github-repo-modal.tsx](/chat/lib/github-components/github-repo-modal.tsx:29)
 
 ## Goal
 
@@ -44,7 +44,7 @@ When behavior differs, the deviation should be documented in this file.
 
 ### 1. Prompt shell and textarea
 
-The rounded container, form submission behavior, and Enter-vs-Shift+Enter behavior are defined in [chat/components/elements/prompt-input.tsx](/Users/Loren/Documents/webroot/chat/components/elements/prompt-input.tsx:24).
+The rounded container, form submission behavior, and Enter-vs-Shift+Enter behavior are defined in [chat/components/elements/prompt-input.tsx](/chat/components/elements/prompt-input.tsx:24).
 
 Key details to preserve:
 
@@ -56,7 +56,7 @@ Key details to preserve:
 
 ### 2. Prompt state and submission payload
 
-The orchestration logic is in [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:276).
+The orchestration logic is in [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:276).
 
 Key details to preserve:
 
@@ -68,7 +68,7 @@ Key details to preserve:
 
 ### 3. Attachment button and upload flow
 
-Attachment visibility and validation start in [chat/components/conditional-file-input.tsx](/Users/Loren/Documents/webroot/chat/components/conditional-file-input.tsx:27) and [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:390).
+Attachment visibility and validation start in [chat/components/conditional-file-input.tsx](/chat/components/conditional-file-input.tsx:27) and [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:390).
 
 Key details to preserve:
 
@@ -80,9 +80,9 @@ Key details to preserve:
 
 ### 4. GitHub button and context flow
 
-The button, session persistence, and message metadata are in [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:102), [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:299), and [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:687).
+The button, session persistence, and message metadata are in [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:102), [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:299), and [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:687).
 
-The current modal implementation is in [chat/lib/github-components/github-repo-modal.tsx](/Users/Loren/Documents/webroot/chat/lib/github-components/github-repo-modal.tsx:77).
+The current modal implementation is in [chat/lib/github-components/github-repo-modal.tsx](/chat/lib/github-components/github-repo-modal.tsx:77).
 
 Key details to preserve:
 
@@ -102,7 +102,7 @@ Until decided otherwise, the static port should prefer Option B because a standa
 
 ### 5. Model selector
 
-The current model picker is in [chat/components/model-selector.tsx](/Users/Loren/Documents/webroot/chat/components/model-selector.tsx:34).
+The current model picker is in [chat/components/model-selector.tsx](/chat/components/model-selector.tsx:34).
 
 Key details to preserve:
 
@@ -122,7 +122,7 @@ For the static port, the cookie action cannot be reused directly. The static ver
 
 ### 6. Thinking toggle
 
-Thinking support is in [chat/components/thinking-mode-toggle.tsx](/Users/Loren/Documents/webroot/chat/components/thinking-mode-toggle.tsx:23).
+Thinking support is in [chat/components/thinking-mode-toggle.tsx](/chat/components/thinking-mode-toggle.tsx:23).
 
 Key details to preserve:
 
@@ -132,7 +132,7 @@ Key details to preserve:
 
 ### 7. Right-side action button
 
-The submit/stop behavior is in [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:763) and [chat/components/elements/prompt-input.tsx](/Users/Loren/Documents/webroot/chat/components/elements/prompt-input.tsx:155).
+The submit/stop behavior is in [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:763) and [chat/components/elements/prompt-input.tsx](/chat/components/elements/prompt-input.tsx:155).
 
 Key details to preserve:
 
@@ -284,15 +284,15 @@ Current repo assumptions:
 
 When the Next.js prompt changes, inspect these files first:
 
-- [chat/components/multimodal-input.tsx](/Users/Loren/Documents/webroot/chat/components/multimodal-input.tsx:45)
-- [chat/components/model-selector.tsx](/Users/Loren/Documents/webroot/chat/components/model-selector.tsx:34)
-- [chat/components/conditional-file-input.tsx](/Users/Loren/Documents/webroot/chat/components/conditional-file-input.tsx:19)
-- [chat/components/thinking-mode-toggle.tsx](/Users/Loren/Documents/webroot/chat/components/thinking-mode-toggle.tsx:16)
-- [chat/components/elements/prompt-input.tsx](/Users/Loren/Documents/webroot/chat/components/elements/prompt-input.tsx:24)
+- [chat/components/multimodal-input.tsx](/chat/components/multimodal-input.tsx:45)
+- [chat/components/model-selector.tsx](/chat/components/model-selector.tsx:34)
+- [chat/components/conditional-file-input.tsx](/chat/components/conditional-file-input.tsx:19)
+- [chat/components/thinking-mode-toggle.tsx](/chat/components/thinking-mode-toggle.tsx:16)
+- [chat/components/elements/prompt-input.tsx](/chat/components/elements/prompt-input.tsx:24)
 
 Also inspect when relevant:
 
-- [chat/lib/github-components/github-repo-modal.tsx](/Users/Loren/Documents/webroot/chat/lib/github-components/github-repo-modal.tsx:29)
+- [chat/lib/github-components/github-repo-modal.tsx](/chat/lib/github-components/github-repo-modal.tsx:29)
 - `chat/lib/github-components/*`
 - `chat/hooks/use-model-capabilities.ts`
 - `chat/lib/storage/*`
@@ -440,6 +440,8 @@ A good sync run should end with:
 - The static prompt is expected to use plain JavaScript instead of React.
 - The static prompt should prefer host callbacks or local persistence over Next.js router and server-action behavior.
 - GitHub source selection may use an embedded modal instead of the chat sidebar event flow.
+- The static prompt does not hardcode an `apiBase` port. API calls use relative URLs so the page works on any origin without a separate backend port. When the server is unreachable, the widget falls back to models from `chat/keys/providers.js` (already loaded as a `<script>`).
+- Provider and model metadata is loaded directly from `chat/keys/providers.js` — no duplicate list is maintained in `prompt.js`.
 
 ## Open Decisions
 
@@ -470,9 +472,9 @@ Status: initial static port created.
 
 The first build now exists in:
 
-- [chat/prompt/index.html](/Users/Loren/Documents/webroot/chat/prompt/index.html:1)
-- [chat/prompt/prompt.css](/Users/Loren/Documents/webroot/chat/prompt/prompt.css:1)
-- [chat/prompt/prompt.js](/Users/Loren/Documents/webroot/chat/prompt/prompt.js:1)
+- [chat/prompt/index.html](/chat/prompt/index.html:1)
+- [chat/prompt/prompt.css](/chat/prompt/prompt.css:1)
+- [chat/prompt/prompt.js](/chat/prompt/prompt.js:1)
 
 Current behavior:
 

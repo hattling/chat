@@ -1,109 +1,40 @@
 import type { AdminConfigSummary } from "@/lib/types";
+import { PROVIDERS } from "@/lib/providers";
 
-// Hardcoded model list mirroring lib/db/migrations/0007-0008 seed data.
+// Derived from chat/keys/providers.js (canonical source) at module load time.
 // Used when the Supabase admin_config / model_config tables are unreachable so the
 // model dropdown and chat route can still operate without DB connectivity.
 export const FALLBACK_ADMIN_CONFIG_SUMMARY: AdminConfigSummary = {
-  providers: {
-    google: {
-      enabled: true,
-      fileInputEnabled: false,
-      allowedFileTypes: [],
-      models: {
-        "gemini-2.5-flash": {
-          id: "gemini-2.5-flash",
-          name: "Gemini 2.5 Flash",
-          description: "Enhanced flash model with better performance",
+  providers: Object.fromEntries(
+    PROVIDERS
+      .filter((p) => !p.tokenOnly && !p.cliOnly && p.models.length > 0)
+      .map((p) => [
+        p.id,
+        {
           enabled: true,
-          isDefault: true,
-          supportsThinkingMode: true,
           fileInputEnabled: false,
           allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 0.075, output: 0.3 },
+          models: Object.fromEntries(
+            p.models
+              .filter((m) => m.active !== false)
+              .map((m) => [
+                m.id,
+                {
+                  id: m.id,
+                  name: m.name,
+                  description: m.description || "",
+                  pricingPerMillionTokens: { input: 0, output: 0 },
+                  enabled: true,
+                  isDefault: m.isDefault,
+                  supportsThinkingMode: !!m.supportsThinkingMode,
+                  fileInputEnabled: false,
+                  allowedFileTypes: [],
+                },
+              ])
+          ),
         },
-        "gemini-2.5-pro": {
-          id: "gemini-2.5-pro",
-          name: "Gemini 2.5 Pro",
-          description: "Most capable model for complex tasks",
-          enabled: true,
-          isDefault: false,
-          supportsThinkingMode: true,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 1.25, output: 5.0 },
-        },
-        "gemini-2.0-flash": {
-          id: "gemini-2.0-flash",
-          name: "Gemini 2.0 Flash",
-          description: "Fast, efficient model for most tasks",
-          enabled: true,
-          isDefault: false,
-          supportsThinkingMode: true,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 0.075, output: 0.3 },
-        },
-      },
-    },
-    xai: {
-      enabled: false,
-      fileInputEnabled: false,
-      allowedFileTypes: [],
-      models: {
-        "grok-3": {
-          id: "grok-3",
-          name: "Grok 3",
-          description: "Most capable Grok model",
-          enabled: true,
-          isDefault: true,
-          supportsThinkingMode: false,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 3.0, output: 15.0 },
-        },
-        "grok-3-mini": {
-          id: "grok-3-mini",
-          name: "Grok 3 Mini",
-          description: "Fast and efficient Grok",
-          enabled: true,
-          isDefault: false,
-          supportsThinkingMode: false,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 0.3, output: 0.5 },
-        },
-      },
-    },
-    groq: {
-      enabled: false,
-      fileInputEnabled: false,
-      allowedFileTypes: [],
-      models: {
-        "llama-3.3-70b-versatile": {
-          id: "llama-3.3-70b-versatile",
-          name: "Llama 3.3 70B",
-          description: "Fast open-source model via Groq",
-          enabled: true,
-          isDefault: true,
-          supportsThinkingMode: false,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 0.059, output: 0.079 },
-        },
-        "llama-3.1-8b-instant": {
-          id: "llama-3.1-8b-instant",
-          name: "Llama 3.1 8B",
-          description: "Fastest Groq model",
-          enabled: true,
-          isDefault: false,
-          supportsThinkingMode: false,
-          fileInputEnabled: false,
-          allowedFileTypes: [],
-          pricingPerMillionTokens: { input: 0.005, output: 0.008 },
-        },
-      },
-    },
-  },
+      ])
+  ),
 };
 
 export const FALLBACK_DB_OFFLINE_STATUS = {

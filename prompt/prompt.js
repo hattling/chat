@@ -278,11 +278,9 @@
       el.hidden = true;
       return;
     }
-    var base = this.options.apiBase || "localhost:8888";
-    var host = base.replace(/^https?:\/\//, "").replace(/\/$/, "");
     el.hidden = false;
     el.innerHTML = svgAlertCircle(14) +
-      "<span>Local server not running on <code>" + escapeHtml(host) + "</code> &mdash; using local model configuration.</span>";
+      "<span>Server unavailable &mdash; models loaded from <code>providers.js</code>.</span>";
   };
 
   StaticPromptWidget.prototype.render = function () {

@@ -112,6 +112,10 @@ body {
   line-height: 1.5;
 }
 
+#promptWidgetPanel {
+  overflow: visible;
+}
+
 .sp-widget {
   container-type: inline-size;
   position: relative;

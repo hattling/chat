@@ -18,6 +18,7 @@ export type ProviderModel = {
   isDefault: boolean;
   active: boolean;
   outputs?: string[];
+  supportsThinkingMode?: boolean;
 };
 
 export type ProviderInfo = {

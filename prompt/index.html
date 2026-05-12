@@ -55,23 +55,7 @@
     document.addEventListener("DOMContentLoaded", function () {
       const preview = document.getElementById("promptPayloadPreview");
 
-      if (typeof addPanelMenu === "function") {
-        [
-          "promptIntroPanel",
-          "promptWidgetPanel",
-          "promptOutputPanel"
-        ].forEach(function (panelId) {
-          addPanelMenu({
-            panelType: "Content",
-            targetPanelId: panelId,
-            containerSelector: "#" + panelId,
-            panelLabel: panelId.replace("prompt", "").replace("Panel", "") || "Panel"
-          }).render();
-        });
-      }
-
       const widget = window.StaticPromptPort.create("#promptMount", {
-        apiBase: "http://localhost:8888",
         settingsUrl: "../keys/",
         onSubmit: function (payload) {
           preview.textContent = JSON.stringify(payload, null, 2);
