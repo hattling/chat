@@ -15,6 +15,7 @@ export type LocalStorageSchema = {
     mistral?: string;
     perplexity?: string;
     deepseek?: string;
+    pollinations?: string;
     discord?: string;
     github?: string;
     pinecone?: string;

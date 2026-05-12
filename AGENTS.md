@@ -15,6 +15,25 @@ It lives inside the webroot container at `webroot/chat/` alongside static-file r
 
 ---
 
+## Start Commands
+
+When the user says **`start chat`**, immediately start the unified server in the background without waiting to be asked:
+
+```bash
+# Check if already running first:
+lsof -ti:8888
+
+# If not running, start it:
+nohup node chat/server.mjs > /tmp/chat-dev.log 2>&1 &
+
+# Confirm it's up:
+sleep 4 && cat /tmp/chat-dev.log
+```
+
+Then report the URLs from the log output.
+
+---
+
 ## Running from the Webroot
 
 ### Unified server (recommended for webroot development)
