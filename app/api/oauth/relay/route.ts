@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
       ).toString("base64");
 
       const dest = new URL(redirect);
-      dest.hash = `auth_user=${encoded}`;
+      // encodeURIComponent prevents URLSearchParams from decoding + as space
+      dest.hash = `auth_user=${encodeURIComponent(encoded)}`;
       destination = dest.toString();
     }
   } catch (err) {
