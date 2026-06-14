@@ -365,7 +365,7 @@ class AuthModal {
         return this.modal && this.modal.classList.contains('show');
     }
 
-    async signInWith(provider) {
+    signInWith(provider) {
         console.log('Starting OAuth flow for provider:', provider);
 
         // Block unconfigured providers
@@ -376,33 +376,16 @@ class AuthModal {
 
         this.hide();
 
-        // Get the API base URL
+        // Navigate directly to the server-side OAuth proxy instead of using fetch().
+        // fetch() + Set-Cookie fails in Chrome incognito because SameSite=None cookies
+        // from cross-origin fetch responses are blocked. A top-level navigation sets
+        // the state cookie in a first-party context, which always works.
         const apiBase = window.AUTH_API_URL ||
             (['localhost', '127.0.0.1', '::1'].includes(location.hostname)
                 ? 'http://localhost:3000/api'
                 : 'https://api.model.earth/api');
 
-        console.log(`[Auth Modal] Starting ${provider} OAuth via better-auth social sign-in...`);
-        try {
-            const res = await fetch(`${apiBase}/auth/sign-in/social`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    provider: provider,
-                    callbackURL: window.location.href,
-                    disableRedirect: true,
-                }),
-            });
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                console.error('[Auth Modal] No redirect URL returned from sign-in/social', data);
-            }
-        } catch (err) {
-            console.error('[Auth Modal] OAuth sign-in error:', err);
-        }
+        window.location.href = `${apiBase}/oauth/${provider}?redirect=${encodeURIComponent(window.location.href)}`;
     }
 
 }

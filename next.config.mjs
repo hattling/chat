@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const nextConfig = {
     async headers() {
         const devCorsHeaders = [
-            { key: 'Access-Control-Allow-Origin', value: 'http://localhost:8888' },
+            { key: 'Access-Control-Allow-Origin', value: 'http://localhost:8887' },
             { key: 'Access-Control-Allow-Credentials', value: 'true' },
             { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
             { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },

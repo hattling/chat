@@ -22,7 +22,7 @@
   var authApiUrl = window.AUTH_API_URL;
   if (!authApiUrl) {
     authApiUrl = isLocalhost
-      ? 'http://localhost:3000/api'
+      ? window.location.origin + '/api'
       : 'https://api.model.earth/api';
   }
   window.AUTH_API_URL = authApiUrl;
@@ -232,7 +232,9 @@
     log('Signing out user');
     fetch(authApiUrl + '/auth/sign-out', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
     })
       .then(function () { window.location.reload(); })
       .catch(function (e) {
