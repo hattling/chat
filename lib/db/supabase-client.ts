@@ -2,7 +2,7 @@
  * Supabase Client Utilities
  *
  * This file provides Supabase client instances for database access only.
- * Auth is now handled by BetterAuth (see betterauth/auth.ts and lib/auth/server.ts).
+ * Auth is now handled by BetterAuth (see lib/auth/instance.ts and lib/auth/server.ts).
  *
  * - createClient: Browser client for client-side DB queries
  * - createServerComponentClient: Server client with cookies for SSR DB queries

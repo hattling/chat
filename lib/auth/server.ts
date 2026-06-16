@@ -1,7 +1,7 @@
 import type { Session, User } from "./types";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/betterauth/auth";
+import { auth } from "@/lib/auth/instance";
 
 export type ServerAuthResult = { user: User; session: Session };
 

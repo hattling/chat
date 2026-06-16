@@ -23,7 +23,7 @@
   var STORAGE_KEY = 'settings_api-keys';
   var LAST_EDIT_KEY = 'settings_api-keys-last-edit';
 
-  // ── Crypto (Web Crypto API + IndexedDB) ──────────────────────────────────────
+  // -- Crypto (Web Crypto API + IndexedDB) --------------------------------------
 
   var DB_NAME = 'km-store';
   var KEY_ID = 'browser-key';
@@ -31,11 +31,12 @@
   // In-memory plaintext cache — populated by _initCrypto()
   var _plaintextCache = {};
 
-  // ── RSA-OAEP server-key encryption (Phase 9) ────────────────────────────────
+  // -- RSA-OAEP server-key encryption (Phase 9) --------------------------------
 
   var USE_APP_API = (
     location.protocol === 'https:' ||
     location.port === '3000' ||
+    location.port === '3700' ||
     location.port === '8888'
   );
 
@@ -84,11 +85,9 @@
     return typeof value === 'string' && value.startsWith('rsa:');
   }
 
-  // ── Server keys (.env) ──────────────────────────────────────────────────────
+  // -- Server keys (.env) ------------------------------------------------------
 
-  var DEFAULT_SERVER_KEYS_URL = USE_APP_API
-    ? '/api/server-keys'
-    : 'http://localhost:8081/api/config/current';
+  var DEFAULT_SERVER_KEYS_URL = USE_APP_API ? '/api/server-keys' : null;
   var SERVER_KEYS_URL = DEFAULT_SERVER_KEYS_URL;
 
   var DEFAULT_VALIDATE_KEY_URL = USE_APP_API
@@ -135,6 +134,7 @@
   }
 
   function _loadServerKeys() {
+    if (!SERVER_KEYS_URL) return Promise.resolve();
     return fetch(SERVER_KEYS_URL)
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -247,7 +247,7 @@
     }));
   }
 
-  // ── Storage helpers (raw, operates on encrypted values) ─────────────────────
+  // -- Storage helpers (raw, operates on encrypted values) ---------------------
 
   function _readAllRaw() {
     try {
@@ -304,7 +304,7 @@
     return !!getKey(providerId);
   }
 
-  // ── Legacy migration ─────────────────────────────────────────────────────────
+  // -- Legacy migration ---------------------------------------------------------
 
   var ENV_TO_PROVIDER = {
     GEMINI_API_KEY:                'google',
@@ -387,7 +387,7 @@
     if (changed) writeAll(data);
   }
 
-  // ── Icons (Material Icons — loaded via localsite.js) ─────────────────────────
+  // -- Icons (Material Icons — loaded via localsite.js) -------------------------
 
   function mi(name) {
     return '<span class="material-icons" style="font-size:18px;vertical-align:middle">' + name + '</span>';
@@ -400,7 +400,7 @@
   var ICON_EYE_OFF = mi('visibility_off');
   var ICON_INFO    = mi('info');
 
-  // ── Key validation ───────────────────────────────────────────────────────────
+  // -- Key validation -----------------------------------------------------------
 
   function _updateStatusIcon(icon, providerId) {
     var browserKey = hasKey(providerId);
@@ -455,7 +455,7 @@
       });
   }
 
-  // ── Paste Keys ───────────────────────────────────────────────────────────────
+  // -- Paste Keys ---------------------------------------------------------------
 
   function buildPastePanel(onApplied) {
     var panel = document.createElement('div');
@@ -536,7 +536,7 @@
     return panel;
   }
 
-  // ── CopyMyKeys ────────────────────────────────────────────────────────────────
+  // -- CopyMyKeys ----------------------------------------------------------------
 
   var _copyPanelTimer = null;
 
@@ -615,7 +615,7 @@
     return panel;
   }
 
-  // ── Toolbar (Paste Keys + CopyMyKeys) ────────────────────────────────────────
+  // -- Toolbar (Paste Keys + CopyMyKeys) ----------------------------------------
 
   function buildToolbar(pastePanel, copyPanel) {
     var toolbar = document.createElement('div');
@@ -684,7 +684,7 @@
     return toolbar;
   }
 
-  // ── Widget renderer ──────────────────────────────────────────────────────────
+  // -- Widget renderer ----------------------------------------------------------
 
   function init(containerEl, options) {
     if (!containerEl) return;
@@ -1142,7 +1142,7 @@
     return (str || '').replace(/"/g, '&quot;');
   }
 
-  // ── Public API ───────────────────────────────────────────────────────────────
+  // -- Public API ---------------------------------------------------------------
 
   window.KeyManager = {
     init: init,

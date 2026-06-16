@@ -12,7 +12,7 @@ function requireSecret(): string {
 export const auth = betterAuth({
   basePath: "/api/auth",
   baseURL: process.env.BETTER_AUTH_BASE_URL
-    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:8888"),
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3700"),
   secret: requireSecret(),
   session: {
     cookieCache: {

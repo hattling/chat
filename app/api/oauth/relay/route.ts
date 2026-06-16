@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/betterauth/auth";
+import { auth } from "@/lib/auth/instance";
 
 // GET /api/oauth/relay?redirect=<original-page-url>
 //

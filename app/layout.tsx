@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { NextDevToolsOffset } from "@/components/next-dev-tools-offset";
 import { ThemeProvider } from "@/components/theme-provider";
+import { WebrootStatusFooter } from "@/components/webroot-status-footer";
 import { AuthProvider } from "@/lib/auth/context";
 
 import "./globals.css";
@@ -71,6 +72,7 @@ export default function RootLayout({
             <Toaster position="top-center" />
             <NextDevToolsOffset />
             {children}
+            <WebrootStatusFooter />
           </AuthProvider>
         </ThemeProvider>
       </body>

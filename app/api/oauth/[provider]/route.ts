@@ -14,7 +14,8 @@ function getAllowedOrigins(): string[] {
     return process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim());
   }
   if (process.env.NODE_ENV !== "production") {
-    return ["http://localhost:8887", "http://localhost:8888"];
+    // 3700 = node server; 8887/8888/8889 = static webroot servers
+    return ["http://localhost:3700", "http://localhost:8887", "http://localhost:8888", "http://localhost:8889"];
   }
   return [];
 }
@@ -59,7 +60,7 @@ export async function GET(
     process.env.BETTER_AUTH_BASE_URL ||
     (process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:8888");
+      : "http://localhost:3700");
 
   let data: { url?: string };
   let authResponse: Response;

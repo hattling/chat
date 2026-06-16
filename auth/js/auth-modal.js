@@ -1,5 +1,7 @@
-// Shared Authentication Modal Component
-// Used by both team/index.html and team/projects/map/index.html
+// Auth Modal — popup overlay for OAuth sign-in.
+// Lazy-loaded by auth-plugin.js only when a popup is needed (fallback floating
+// button, or programmatic showAuthModal() call). Pages with #accountPanelInserts
+// get inline provider buttons from auth-plugin.js instead and never load this file.
 
 class AuthModal {
     constructor() {
@@ -195,7 +197,7 @@ class AuthModal {
                 background: #FFFFFF;
                 color: #374151;
                 text-decoration: none;
-                font-size: 14px;
+                font-size: 18px;
                 font-weight: 500;
                 cursor: pointer;
                 transition: all 0.2s ease;
@@ -246,6 +248,25 @@ class AuthModal {
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
+
+            .auth-server-status {
+                text-align: center;
+                font-size: 13px;
+                font-weight: 500;
+                padding: 8px 12px;
+                margin-bottom: 16px;
+                border-radius: 8px;
+                background: #F3F4F6;
+                color: #6B7280;
+            }
+            .auth-server-status.online {
+                background: #ECFDF5;
+                color: #047857;
+            }
+            .auth-server-status.offline {
+                background: #FEF2F2;
+                color: #B91C1C;
+            }
         `;
         document.head.appendChild(styles);
     }
@@ -265,7 +286,9 @@ class AuthModal {
                             </svg>
                         </button>
                     </div>
-                    
+
+                    <div id="auth-server-status" class="auth-server-status">Checking auth server…</div>
+
                     <div class="auth-buttons">
                         <button class="auth-btn" onclick="window.authModal.signInWith('google')">
                             <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -316,14 +339,10 @@ class AuthModal {
             if (!btn) return;
 
             if (this.isLocal) {
-                // Localhost: show greyed out with "Not configured" badge
+                // Localhost: show greyed-out / inactive (no "Not configured" badge).
                 btn.classList.add('inactive');
-                const badge = document.createElement('span');
-                badge.className = 'inactive-badge';
-                badge.textContent = 'Not configured';
-                btn.appendChild(badge);
             } else {
-                // Production: hide completely
+                // Production: hide providers without configured credentials.
                 btn.style.display = 'none';
             }
         });
@@ -338,6 +357,28 @@ class AuthModal {
         });
     }
 
+    async checkServerStatus() {
+        const statusEl = document.getElementById('auth-server-status');
+        if (!statusEl) return;
+        statusEl.textContent = 'Checking auth server…';
+        statusEl.className = 'auth-server-status';
+        const apiBase = window.AUTH_API_URL ||
+            (this.isLocal ? 'http://localhost:3700/api' : 'https://api.model.earth/api');
+        try {
+            const res = await fetch(`${apiBase}/auth/get-session`, { credentials: 'include' });
+            if (res.ok) {
+                statusEl.textContent = 'Auth server connected';
+                statusEl.className = 'auth-server-status online';
+            } else {
+                statusEl.textContent = `Auth server unavailable (HTTP ${res.status}) — sign-in won't work yet`;
+                statusEl.className = 'auth-server-status offline';
+            }
+        } catch (e) {
+            statusEl.textContent = "Auth server unreachable — sign-in won't work yet";
+            statusEl.className = 'auth-server-status offline';
+        }
+    }
+
     show() {
         // Close left side panel if open
         if (typeof getHash === 'function') {
@@ -349,6 +390,7 @@ class AuthModal {
 
         if (this.modal) {
             this.modal.classList.add('show');
+            this.checkServerStatus();
         }
     }
 
@@ -382,7 +424,7 @@ class AuthModal {
         // the state cookie in a first-party context, which always works.
         const apiBase = window.AUTH_API_URL ||
             (['localhost', '127.0.0.1', '::1'].includes(location.hostname)
-                ? 'http://localhost:3000/api'
+                ? 'http://localhost:3700/api'
                 : 'https://api.model.earth/api');
 
         window.location.href = `${apiBase}/oauth/${provider}?redirect=${encodeURIComponent(window.location.href)}`;
@@ -426,7 +468,7 @@ async function checkAuthSession() {
         // Use configured API URL or fall back based on environment
         const apiBase = window.AUTH_API_URL ||
           (['localhost', '127.0.0.1', '::1'].includes(location.hostname)
-            ? 'http://localhost:3000/api'
+            ? 'http://localhost:3700/api'
             : 'https://api.model.earth/api');
 
         const response = await fetch(`${apiBase}/auth/get-session`, {

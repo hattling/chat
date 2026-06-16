@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { authClient } from "@/betterauth/client";
+import { authClient } from "@/lib/auth/client";
 
 export const SignOutForm = () => {
   const router = useRouter();

@@ -19,7 +19,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isRepoWikiPath } from "@/lib/repo-wiki";
 
-// BetterAuth session cookie name. Must match the basePath in betterauth/auth.ts.
+// BetterAuth session cookie name. Must match the basePath in lib/auth/instance.ts.
 // The middleware only checks cookie presence — full session validation happens
 // in server components via auth.api.getSession(). Admin role enforcement is
 // also handled server-side; the middleware only redirects unauthenticated users.

@@ -17,16 +17,22 @@ It lives inside the webroot container at `webroot/chat/` alongside static-file r
 
 ## Start Commands
 
-When the user says **`start chat`**, immediately start the unified server in the background without waiting to be asked:
+When the user says **`start chat`**, first **ask the localhost user which mode to start in — webroot or the chat repo** (do not auto-start; the choice changes the port and what gets served):
+
+| Mode | Command (run from the webroot root) | Port | Serves |
+|---|---|---|---|
+| **webroot** | `nohup node chat/server.mjs > /tmp/chat-dev.log 2>&1 &` | **3700** | chat app **+** sibling static repos (`/localsite/`, `/team/`, `/chat/auth/`, …) **+** mounted `/sanity` |
+| **webroot + turbopack** | `nohup TURBOPACK=1 node chat/server.mjs > /tmp/chat-dev.log 2>&1 &` | **3700** | same as webroot but with Turbopack HMR (may spike CPU/file handles on large webroot trees) |
+| **chat repo** | `nohup pnpm --prefix chat dev > /tmp/chat-dev.log 2>&1 &` | **3700** | chat app only (Turbopack HMR, no static repos) |
+
+In **both** modes the chat app sits at the **server root** — there is no `/chat` repo prefix. `server.mjs` does not mount the chat repo under `/chat`; `/chat` is the chat-list route, `/chat/keys` and `/chat/auth` are static handlers, and the API is at `/api/...`.
 
 ```bash
-# Check if already running first:
-lsof -ti:8888
+# Check the chosen port isn't already in use first:
+lsof -ti:3700        # both modes use port 3700
 
-# If not running, start it:
-nohup node chat/server.mjs > /tmp/chat-dev.log 2>&1 &
-
-# Confirm it's up:
+# First run only: pnpm --prefix chat install   (+ bun --cwd sanity install for webroot mode)
+# Then start with the command for the chosen mode above, and confirm it's up:
 sleep 4 && cat /tmp/chat-dev.log
 ```
 
@@ -67,7 +73,8 @@ pnpm --prefix chat install
 bun --cwd sanity install
 
 # 2. Start the unified server from the webroot root:
-node chat/server.mjs               # → http://localhost:8888
+node chat/server.mjs               # → http://localhost:3700 (webpack, default)
+TURBOPACK=1 node chat/server.mjs   # → same port with Turbopack HMR
 PORT=8887 node chat/server.mjs     # → replaces the Python server
 
 # Or via pnpm:
@@ -83,39 +90,48 @@ The **chat app occupies the root** — no path prefix:
 
 | URL | Serves |
 |---|---|
-| `localhost:8888/` | chat home |
-| `localhost:8888/chat` | chat list / new chat |
-| `localhost:8888/chat/[id]` | a conversation |
-| `localhost:8888/settings` | settings |
-| `localhost:8888/chat/keys/` | standalone key manager widget |
-| `localhost:8888/sanity/` | Sanity frontend |
-| `localhost:8888/sanity/admin` | Sanity Studio |
-| `localhost:8888/localsite/…` | `localsite/` static files |
-| `localhost:8888/team/…` | `team/` static files |
-| `localhost:8888/requests/…` | `requests/` static files |
+| `localhost:3700/` | chat home |
+| `localhost:3700/chat` | chat list / new chat |
+| `localhost:3700/chat/[id]` | a conversation |
+| `localhost:3700/settings` | settings |
+| `localhost:3700/chat/keys/` | standalone key manager widget |
+| `localhost:3700/sanity/` | Sanity frontend |
+| `localhost:3700/sanity/admin` | Sanity Studio |
+| `localhost:3700/localsite/…` | `localsite/` static files |
+| `localhost:3700/team/…` | `team/` static files |
+| `localhost:3700/requests/…` | `requests/` static files |
 | `localhost:3001/` | ComfyUI Deploy dashboard (when `workflow/` present) |
 
 Static repo paths (`/localsite/`, `/team/`, `/requests/`, `/realitystream/`, `/data-pipeline/`, `/home/`) are served directly from the filesystem before Next.js sees the request. `/sanity/*` is proxied to the Sanity Next.js app, and everything else goes to chat Next.js.
 
-#### Why port 8888?
+#### Why port 3700?
 
-Port 3000 is used internally by the mounted Sanity dev server when you run `node chat/server.mjs`. Port 8887 is the existing Python static server. 8888 is the unified server default; set `PORT=8887` to replace the Python server entirely.
+3700 is the chat server default in **both** modes (`node chat/server.mjs` and `pnpm --prefix chat dev`), so `api_url_development` is a single constant. The mounted Sanity dev server uses **3701** internally (`SANITY_PORT`). Port 8887 is the existing Python static server; set `PORT=8887 node chat/server.mjs` to replace it entirely. 3700/3701 were chosen to avoid collisions with the common 3000/8080 dev ports and the local 8887/8888 servers.
 
-### Chat-only development (fastest)
+### Chat-only development
 
 For working exclusively on the Next.js app with Turbopack HMR:
 
 ```bash
-cd chat && pnpm dev    # port 3000, Turbopack, no static repo serving
+cd chat && pnpm dev    # port 3700, Turbopack, no static repo serving
 ```
 
 `lib/env-loader.ts` finds `docker/.env` at `../docker/.env` relative to `chat/`. No separate `.env` file inside `chat/` is needed.
 
-### No-Supabase mode
+### Auth backends & no-database mode
 
-If `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` are absent from the environment, the auth middleware is bypassed automatically. Pages load without login. DB-backed features (chat history, saved messages, admin config) will return errors, but the key manager, settings UI, and client-side features work normally.
+The database is an **optional** auth backend, not a requirement. There are two ways to run auth, selectable by configuration:
 
-For the full chat experience (conversation history, model config from DB, logging), Supabase Cloud credentials in `docker/.env` are required. Running a **local** Supabase instance is not required — the hosted project works directly.
+| Mode | Backend | What works | When |
+|---|---|---|---|
+| **Database-backed** | Supabase (or any Postgres / other Drizzle-supported DB) | Full set: OAuth + email/password, persisted users/sessions/accounts, chat history, admin roles, model config | A `POSTGRES_URL` is configured |
+| **Stateless / OAuth-only** | None — sessions live entirely in a signed JWE cookie/token | OAuth sign-in and session validation with **no DB roundtrip**; identity available to the UI | No DB configured, or `AUTH_MODE=stateless` |
+
+Supabase is **one** supported database, not the only one — any Postgres-compatible URL works, and other backends can be added through the Drizzle adapter. Running a **local** Supabase instance is never required; a hosted Postgres URL works directly.
+
+In **stateless / OAuth-only** mode the app no longer bypasses auth. Sessions are validated from the JWE session cookie using `BETTER_AUTH_SECRET` (see `betterauth/auth-edge.ts`), so login works without a database. DB-only features (chat history, saved messages, admin config) degrade gracefully — the key manager, settings UI, OAuth identity, and client-side features all work.
+
+> Legacy behaviour (now superseded): older builds *bypassed* the auth middleware entirely when Supabase env vars were absent. We are replacing that "no auth without a DB" assumption with real stateless auth. If you find code or docs still asserting "auth is skipped when Supabase is missing," treat it as out of date.
 
 ### `pnpm build` and migrations
 
@@ -145,7 +161,7 @@ nohup node chat/server.mjs > /tmp/chat-dev.log 2>&1 &
 nohup pnpm --prefix chat dev > /tmp/chat-dev.log 2>&1 &
 ```
 
-Check if already running: `lsof -ti:8888`
+Check if already running: `lsof -ti:3700`
 
 ---
 
@@ -159,10 +175,10 @@ Check if already running: `lsof -ti:8888`
 | Styling | Tailwind CSS + `shadcn/ui` components |
 | Linter/Formatter | **Biome** (not ESLint, not Prettier) |
 | Package manager | **pnpm** (not npm, not yarn) |
-| Database | PostgreSQL via Supabase |
+| Database | **Optional** — PostgreSQL via Supabase or any Postgres URL; omit for stateless/OAuth-only auth |
 | ORM | Drizzle ORM — schema in `lib/db/drizzle-schema.ts` |
 | DB migrations | `lib/db/migrations/` — run with `pnpm db:migrate` |
-| Auth | better-auth (`lib/auth/`) |
+| Auth | better-auth — instance in `betterauth/`, helpers in `lib/auth/`, middleware in `proxy.ts` |
 | AI SDK | Vercel AI SDK v5 (`@ai-sdk/*`) |
 | Icons | Custom inline SVG in `components/icons.tsx` |
 
@@ -184,7 +200,7 @@ BETTER_AUTH_SECRET
 REQUIRE_AUTH          # optional — true/false to override host-based auth gate
 ```
 
-The `lib/env-loader.ts` file handles reading these at runtime.
+The `lib/env-loader.ts` file handles reading these at runtime. **Non-secret** auth/site settings (origins, base URLs, mode flags) belong in `docker/webroot.yaml`; **secrets** (`BETTER_AUTH_SECRET`, OAuth client secrets, `POSTGRES_URL`) stay in `docker/.env`. See **Authentication (better-auth)** below for the full auth variable list and the OAuth provider credentials.
 
 ### Where to document new env vars
 
@@ -279,6 +295,147 @@ App Router (`app/` directory). Route groups:
 - `app/(auth)/` — authentication
 - `app/api/admin/` — admin API endpoints
 - `app/settings/` — settings page
+
+---
+
+## Authentication (better-auth)
+
+Auth is provided by **better-auth**, integrated alongside (not replacing) the prior Supabase auth. The DB is an optional backend — see "Auth backends & no-database mode" above.
+
+### Where the auth code lives
+
+| File | Role |
+|---|---|
+| `betterauth/auth.ts` | Full server instance — Drizzle adapter (DB-backed), email/password, social providers, cookie/session config |
+| `betterauth/auth-edge.ts` | DB-less instance for Edge middleware — validates the JWE session cookie with the shared secret, no DB roundtrip (this is the stateless path) |
+| `betterauth/client.ts` | `better-auth/react` client for in-app React usage |
+| `lib/auth/server.ts` | Server helpers: `getCurrentUser`, `getSession`, `requireAuth`, `requireAdmin`, `isAuthRequired` |
+| `lib/auth/{client,context,hooks,types}.ts` | Client-side React context/hooks/types |
+| `proxy.ts` | Edge middleware — route gating via `better-auth.session_token` cookie presence (public/protected/admin route lists) |
+| `app/api/auth/*` | better-auth's own endpoints (`/sign-in/social`, `/get-session`, callbacks) |
+| `app/api/oauth/[provider]/route.ts` | **Navigation-based OAuth proxy** (incognito-safe — see below) |
+| `app/api/oauth/relay/route.ts` | Reads the session first-party after OAuth callback, returns identity in the URL hash |
+| `auth/js/auth-modal.js` | Vanilla-JS sign-in modal for **static** (non-Next.js) pages; calls the OAuth proxy via top-level navigation |
+| `auth/js/auth-plugin.js`, `auth/css/auth.css` | Supporting plugin + styles for the static modal |
+
+> **Why `chat/auth/`, not `chat/public/auth/`:** these are **pure-static, no-build** assets, served exactly like `chat/keys/`. Living under `public/` would make them reachable only through a running Next.js server (which strips `public/`), so a plain static file server (the webroot's Python server) couldn't serve them at a clean path. As a sibling of `chat/keys/`, they're served literally at `/chat/auth/...` by any static server, and `server.mjs` has a `/auth/*` + `/chat/auth/*` handler (mirroring its `/chat/keys/*` handler) for the unified server. Trade-off: a Vercel **root=chat** deployment must serve `chat/auth/` the same way it serves `chat/keys/` (not auto-served from outside `public/`).
+
+> **URL-path naming rule:** keep the term "betterauth"/"better-auth" **out of public URL paths**. The API mounts use generic `/api/auth/*` (your `app/api/auth/[...all]/route.ts`) and `/api/oauth/*`. Static client assets live under `chat/auth/` → served at `/chat/auth/...` (or `/auth/...` when the deploy root is chat), **not** `/betterauth/...`. The source folder `betterauth/` is only an import alias (`@/betterauth/auth`) and is never exposed as a URL.
+
+### Static sign-in for non-React sites (the localsite dispatcher)
+
+Non-React sites across the webroot (team, localsite-based pages, etc.) do **not** ship their own auth UI. They call a single shared dispatcher, `showAuthModal()`, defined once in `localsite/js/localsite.js` (the universal include on every site). That dispatcher contains no auth logic — it looks up **where** the auth modal lives and loads it from this chat repo's `chat/auth/` (served at `/chat/auth/...`).
+
+The auth source is configured in **`docker/webroot.yaml`** under the `auth:` block (`modal_url_*`, `plugin_url_*`, `api_url_*`, `source_repo`). `showAuthModal()` resolves it in this order: `window.webrootAuth` → the `auth:` block fetched from `/docker/webroot.yaml` → built-in fallback (`/auth/js/auth-modal.js` at the site root, i.e. this repo). This indirection lets the auth source be repointed to a different repo later without editing any site code.
+
+**In-page launcher:** when localsite inserts its account panel (`template-main.html`, which holds `#accountPanelInserts`), `loadLocalTemplate()` calls `initAuthPlugin()`, which loads this repo's **`auth-plugin.js`** (`plugin_url_*` from `webroot.yaml`). The plugin injects the sign-in button + session state inline into `#accountPanelInserts` and opens the modal on click — so sign-in works **in-page**, not only as a popup. It's loaded only where the account panel exists, so header-less pages get no floating button.
+
+**Path prefix:** from a host page served by the **webroot**, the chat app (modal, plugin, and `/api`) lives under **`/chat`** — e.g. `/chat/auth/js/auth-plugin.js`, `/chat/api`. The `/auth/...` and `/api/...` forms (no prefix) apply only when the deploy root **is** the chat repo itself (some Vercel deployments, and the chat-at-root unified dev server). `webroot.yaml`'s `*_development` values carry the `/chat` prefix; the `*_production` values point at the standalone chat deployment without it. Adjust per how the chat app is mounted.
+
+**Do not reintroduce auth UI or a duplicate modal into `localsite/` or `team/`** — host the modal/plugin here and let sites reach them through `showAuthModal()` / the account panel.
+
+### Cross-origin / incognito design (important)
+
+The chat app's auth origin differs from the page origin (dev: `:3700` vs `:8887`; prod: `api.model.earth` vs `model.earth`). The failure where **auth works in normal Chrome but fails in incognito and Firefox is a third-party-cookie problem, not CORS**:
+
+- A cookie written from a cross-origin `fetch()` response (the OAuth `state` cookie, the session cookie) is a third-party cookie. Incognito Chrome and Firefox (Total Cookie Protection) block it by default; normal Chrome still allows it.
+- Adding `Access-Control-Allow-*` headers cannot fix this — CORS governs reading the response, not storing/sending the cookie.
+
+The fix is to avoid cross-origin cookie writes/reads entirely:
+
+1. **OAuth init is a top-level navigation**, not `fetch()`. The browser navigates to `/api/oauth/:provider?redirect=<page>` on the chat origin, so better-auth writes the `state` cookie **first-party**.
+2. The proxy sets `callbackURL` to **`/api/oauth/relay`**, which reads the session server-side (first-party) and appends the user as a base64url blob in the **URL hash** (`#auth_user=…`). The page reads the hash — no cross-origin cookie read.
+
+**Known gaps to close as betterauth is integrated** (do not assume these are done):
+
+- **Session persistence:** `auth-modal.js` still falls back to a cross-origin `fetch('/auth/get-session')`, which is blocked in incognito/Firefox on refresh. Stateless mode should instead hand the page a **signed token** stored on the page origin and sent as `Authorization: Bearer …` (bearer headers are not subject to cookie blocking).
+- **The `#auth_user=` blob is unsigned** — cosmetic only (name/avatar). Never treat it as proof of auth; every privileged action must be authorized server-side. A real stateless credential must be a signed JWT/JWE.
+- **Production levers are unset:** `next.config.mjs` `headers()` returns `[]` in production and `crossSubDomainCookies` is disabled in `betterauth/auth.ts`. Because `api.model.earth` and `model.earth` share the registrable domain, enabling cross-subdomain cookies (`Domain=.model.earth`) makes the session **same-site** in production and avoids the third-party-cookie issue there — simpler than the relay for the prod case. The relay/bearer path is still needed for the genuinely cross-site dev setup and any off-domain embed.
+
+### Auth configuration & secrets
+
+Non-secret auth settings belong in **`docker/webroot.yaml`** (the committed site config). Secrets (`BETTER_AUTH_SECRET`, OAuth client secrets, `POSTGRES_URL`) belong in `docker/.env` — never in `webroot.yaml`.
+
+Relevant env vars (loaded from `docker/.env`):
+
+```
+BETTER_AUTH_SECRET        # required, min 32 chars — signs the JWE session
+BETTER_AUTH_BASE_URL      # auth origin, e.g. http://localhost:3700 or https://api.model.earth
+ALLOWED_ORIGINS           # comma-separated trusted origins (required in production)
+AUTH_API_URL              # client override for the auth API base (window.AUTH_API_URL)
+REQUIRE_AUTH              # true/false override of the host-based auth gate
+POSTGRES_URL              # OPTIONAL — omit for stateless / OAuth-only mode
+# OAuth provider credentials (each provider auto-enables only when both are set):
+GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
+GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET
+LINKEDIN_CLIENT_ID / LINKEDIN_CLIENT_SECRET
+MICROSOFT_CLIENT_ID / MICROSOFT_CLIENT_SECRET
+DISCORD_CLIENT_ID / DISCORD_CLIENT_SECRET
+FACEBOOK_CLIENT_ID / FACEBOOK_CLIENT_SECRET
+```
+
+---
+
+## Deploying to Vercel — repo root vs `chat/` root
+
+Two supported deployment modes. The webroot parent folder **may not always be named `webroot`** — never hard-code that name; always resolve paths relative to the config file location or `import.meta.url`.
+
+### Mode A — Root Directory = `chat` (current default)
+
+Vercel project settings:
+
+| Setting | Value |
+|---|---|
+| Root Directory | `chat` |
+| Framework Preset | Next.js (auto-detected) |
+| Install Command | (leave default: `pnpm install`) |
+| Build Command | (leave default: `pnpm build`) |
+| Output Directory | (leave default: `.next`) |
+
+See `DEPLOYMENT_GUIDE.md` for full steps including Supabase setup and env vars.
+
+**What's served:** only the Next.js chat app and its `public/` directory.
+
+**Known gap — static widget assets:** `chat/keys/key-manager.js`, `chat/keys/style.css`, and `chat/auth/js/auth-{modal,plugin}.js` are served by `server.mjs` locally but are not inside `chat/public/`, so Vercel will not serve them at `/keys/…` or `/chat/keys/…`. The React key manager page at `/key` works (Next.js route). Static embeds on non-Next.js pages that load `key-manager.js` directly will 404. Fix: copy those files into `chat/public/keys/` and `chat/public/auth/` as part of the build, or add Next.js API routes that stream them.
+
+### Mode B — Root Directory = webroot root
+
+Use this when the parent webroot folder is the Vercel project root (e.g. the webroot repo itself is what's imported into Vercel, not just the `chat/` subfolder).
+
+There is no `package.json` at the webroot root, so Vercel's default install/build steps fail. A `vercel.json` at the webroot root handles this:
+
+```json
+{
+  "installCommand": "pnpm --prefix chat install",
+  "buildCommand": "pnpm --prefix chat build",
+  "outputDirectory": "chat/.next",
+  "framework": "nextjs"
+}
+```
+
+This file exists at `webroot/vercel.json`. Alternatively, set these in the Vercel dashboard under Project Settings → Build & Development Settings.
+
+Vercel dashboard settings for Mode B:
+
+| Setting | Value |
+|---|---|
+| Root Directory | (blank — webroot root) |
+| Framework Preset | Next.js |
+| Install Command | `pnpm --prefix chat install` |
+| Build Command | `pnpm --prefix chat build` |
+| Output Directory | `chat/.next` |
+
+**What's served:** only the Next.js chat app — same as Mode A. Vercel does **not** serve sibling static repos (`/localsite/`, `/team/`, `/requests/`, etc.). Those are served locally by `server.mjs` but Vercel has no file server for them. If needed, serve sibling repos from a CDN or a separate Vercel static project.
+
+### `server.mjs` is local dev only
+
+`chat/server.mjs` is the **local unified development server** — it is never invoked by Vercel. Vercel runs `next build` then `next start` (or its own Next.js serverless runtime). The static-file routing, Sanity proxy, and sibling-repo serving in `server.mjs` have no equivalent on Vercel.
+
+### Path resolution must stay relative
+
+- `lib/env-loader.ts` probes `../docker/.env` (relative to `chat/` as cwd) then `docker/.env` (relative to cwd if cwd is the webroot root) — keep both candidates.
+- `next.config.mjs` anchors `turbopack.root = __dirname` (the `chat/` directory) — keep root detection anchored to the config file location, not to a folder name.
+- `server.mjs` uses `CHAT_DIR = dirname(fileURLToPath(import.meta.url))` and `WEBROOT = resolve(CHAT_DIR, '..')` — already correct regardless of what the parent folder is named.
 
 ---
 

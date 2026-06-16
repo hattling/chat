@@ -8,9 +8,9 @@ This catch-all route (`[...all]/route.ts`) is handled by **BetterAuth** using th
 BetterAuth handles all authentication (email/password + social OAuth) while Supabase
 Postgres remains as the database via the Drizzle adapter.
 
-- `betterauth/auth.ts` — Server auth config with Drizzle adapter
-- `betterauth/auth-edge.ts` — Edge-compatible auth for Next.js middleware (JWE cookie, no DB)
-- `betterauth/client.ts` — React client (`authClient`)
+- `lib/auth/instance.ts` — Server auth config with Drizzle adapter
+- `lib/auth/instance-edge.ts` — Edge-compatible auth for Next.js middleware (JWE cookie, no DB)
+- `lib/auth/client.ts` — React client (`authClient`) + client-side auth helpers
 - `lib/auth/server.ts` — Server-side auth helpers (`getCurrentUser`, `requireAuth`, etc.)
 - `lib/auth/client.ts` — Client-side auth helpers (`signIn`, `signUp`, `signOut`, etc.)
 - `lib/auth/context.tsx` — React context using `authClient.useSession()`

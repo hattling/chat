@@ -1,7 +1,11 @@
 "use client";
 
-import { authClient } from "@/betterauth/client";
+import { createAuthClient } from "better-auth/react";
 import type { User, Session, UserMetadata, SignUpEmailStatus } from "./types";
+
+export const authClient = createAuthClient({
+  basePath: "/api/auth",
+});
 
 export type { User, Session, UserMetadata, SignUpEmailStatus };
 

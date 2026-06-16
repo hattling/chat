@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/betterauth/client";
+import { authClient } from "@/lib/auth/client";
 import {
   signIn as clientSignIn,
   signOut as clientSignOut,

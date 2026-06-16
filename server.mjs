@@ -17,7 +17,7 @@
  *   /localsite/    /team/    /requests/    /realitystream/    etc.
  *
  * Run from the webroot root:
- *   node chat/server.mjs               → http://localhost:8888
+ *   node chat/server.mjs               → http://localhost:3700
  *   PORT=8887 node chat/server.mjs     → replaces the Python server
  *
  * Or via pnpm (from webroot/ or from inside chat/):
@@ -320,6 +320,24 @@ function tryStatic(pathname, res) {
     return false
   }
 
+  // /auth/ and /chat/auth — static auth widget (modal + plugin), like /chat/keys.
+  // Pure static, no build: the host page loads /chat/auth/js/auth-{modal,plugin}.js.
+  const isChatAuthRoute = top === 'chat' && segments[1] === 'auth'
+  const isAuthRoute = top === 'auth' || isChatAuthRoute
+
+  if (isAuthRoute) {
+    // Strip the leading path prefix to get segments relative to chat/auth/
+    const relativeSegments = isChatAuthRoute ? segments.slice(2) : segments.slice(1)
+    if (relativeSegments.length === 0) return false
+
+    const filePath = join(CHAT_DIR, 'auth', ...relativeSegments)
+    try {
+      const stat = statSync(filePath)
+      if (stat.isFile()) { serveFile(filePath, res); return true }
+    } catch { /* not found */ }
+    return false
+  }
+
   // Any webroot directory that isn't reserved for Next.js is served statically.
   if (!top || NEXTJS_DIRS.has(top)) return false
 
@@ -433,7 +451,7 @@ function renderSanityFallbackPage() {
       <pre>NEXT_PUBLIC_SANITY_PROJECT_ID=your_sanity_project_id
 NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_READ_TOKEN=your_sanity_viewer_token
-NEXT_PUBLIC_BASE_URL=http://localhost:8888/sanity</pre>
+NEXT_PUBLIC_BASE_URL=http://localhost:3700/sanity</pre>
       <p>Mount path injection is handled automatically by chat and does not need to be stored in the upstream <code>sanity/</code> repo.</p>
     </div>
     <div class="panel">
@@ -521,8 +539,8 @@ function proxySanityUpgrade(req, socket, head) {
 
 // ── Next.js ──────────────────────────────────────────────────────────────────
 
-const PORT     = parseInt(process.env.PORT || '8888', 10)
-const SANITY_PORT = parseInt(process.env.SANITY_PORT || '3000', 10)
+const PORT     = parseInt(process.env.PORT || '3700', 10)
+const SANITY_PORT = parseInt(process.env.SANITY_PORT || '3701', 10)
 const HOSTNAME = 'localhost'
 const dev      = process.env.NODE_ENV !== 'production'
 const sanityState = {
@@ -595,12 +613,12 @@ async function startSanityDevServer() {
 }
 
 // hostname + port must be passed so Next.js binds HMR WebSockets correctly.
-// `webpack: true` pins this custom server to webpack. Next 16 defaults custom
-// servers to Turbopack via `process.env.TURBOPACK ??= 'auto'` (see
-// next/dist/server/next.js), and Turbopack's watcher footprint can exceed local
-// file limits in the full webroot, causing the route manifest to collapse to
-// only `_not-found` and spiking CPU on the watcher itself.
-const app    = next({ dev, dir: CHAT_DIR, hostname: HOSTNAME, port: PORT, webpack: true })
+// Webpack is the default for the unified webroot server: Turbopack's file watcher
+// footprint can exceed OS limits across the full webroot (many submodules), causing
+// the route manifest to collapse to only `_not-found` and spiking CPU.
+// Opt into Turbopack with: TURBOPACK=1 node chat/server.mjs
+const useTurbopack = process.env.TURBOPACK === '1'
+const app    = next({ dev, dir: CHAT_DIR, hostname: HOSTNAME, port: PORT, ...(useTurbopack ? {} : { webpack: true }) })
 const handle = app.getRequestHandler()
 const sanityProcess = await startSanityDevServer()
 

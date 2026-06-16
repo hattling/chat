@@ -18,7 +18,7 @@ function requireSecret(): string {
 function resolveBaseURL(): string {
   if (process.env.BETTER_AUTH_BASE_URL) return process.env.BETTER_AUTH_BASE_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:8888";
+  return "http://localhost:3700";
 }
 
 function resolveTrustedOrigins(): string[] {
@@ -28,7 +28,8 @@ function resolveTrustedOrigins(): string[] {
   if (process.env.NODE_ENV === "production") {
     throw new Error("ALLOWED_ORIGINS is required in production");
   }
-  return ["http://localhost:8887", "http://localhost:8888"];
+  // 3700 = node server; 8887/8888/8889 = static webroot servers whose pages load the auth modal
+  return ["http://localhost:3700", "http://localhost:8887", "http://localhost:8888", "http://localhost:8889"];
 }
 
 export const auth = betterAuth({

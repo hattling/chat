@@ -418,7 +418,7 @@
   font-style: italic;
 }
 
-/* ── Toolbar (Paste Keys + CopyMyKeys) ── */
+/* -- Toolbar (Paste Keys + CopyMyKeys) -- */
 .key-toolbar {
   display: flex;
   align-items: center;
@@ -450,7 +450,7 @@
   cursor: pointer;
 }
 
-/* ── Paste Keys panel ── */
+/* -- Paste Keys panel -- */
 .key-paste-panel {
   background: var(--key-bg);
   border: 1px solid var(--key-border);
@@ -531,7 +531,7 @@
   border-color: #991b1b;
 }
 
-/* ── CopyMyKeys panel ── */
+/* -- CopyMyKeys panel -- */
 .key-copy-panel {
   background: #fffbea;
   border: 1px solid #f0c040;
