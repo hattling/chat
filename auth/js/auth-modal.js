@@ -363,7 +363,7 @@ class AuthModal {
         statusEl.textContent = 'Checking auth server…';
         statusEl.className = 'auth-server-status';
         const apiBase = window.AUTH_API_URL ||
-            (this.isLocal ? 'http://localhost:3700/api' : 'https://api.model.earth/api');
+            (this.isLocal ? 'http://localhost:3700/api' : 'https://modelearth.vercel.app/api');
         try {
             const res = await fetch(`${apiBase}/auth/get-session`, { credentials: 'include' });
             if (res.ok) {
@@ -425,7 +425,7 @@ class AuthModal {
         const apiBase = window.AUTH_API_URL ||
             (['localhost', '127.0.0.1', '::1'].includes(location.hostname)
                 ? 'http://localhost:3700/api'
-                : 'https://api.model.earth/api');
+                : 'https://modelearth.vercel.app/api');
 
         window.location.href = `${apiBase}/oauth/${provider}?redirect=${encodeURIComponent(window.location.href)}`;
     }
@@ -469,7 +469,7 @@ async function checkAuthSession() {
         const apiBase = window.AUTH_API_URL ||
           (['localhost', '127.0.0.1', '::1'].includes(location.hostname)
             ? 'http://localhost:3700/api'
-            : 'https://api.model.earth/api');
+            : 'https://modelearth.vercel.app/api');
 
         const response = await fetch(`${apiBase}/auth/get-session`, {
             credentials: 'include' // Send httpOnly cookie

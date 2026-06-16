@@ -15,7 +15,7 @@ Register this redirect URI in each provider's developer console:
 | Environment | Callback URI |
 |---|---|
 | Development | `http://localhost:3700/api/auth/callback/<provider>` |
-| Production | `https://api.model.earth/api/auth/callback/<provider>` |
+| Production | `https://modelearth.vercel.app/api/auth/callback/<provider>` |
 
 Replace `<provider>` with the provider name below.
 
@@ -48,7 +48,7 @@ Click **+ Create Credentials → OAuth client ID**.
 Under **Authorized redirect URIs**:
 ```
 http://localhost:3700/api/auth/callback/google
-https://api.model.earth/api/auth/callback/google
+https://modelearth.vercel.app/api/auth/callback/google
 ```
 
 > **Note:** The Google Identity Services (GSI) sign-in button uses *Authorized JavaScript origins* instead of redirect URIs, and is a different flow. better-auth uses redirect URIs only.
@@ -172,7 +172,7 @@ FACEBOOK_CLIENT_SECRET=
 
 For production:
 ```
-BETTER_AUTH_BASE_URL=https://api.model.earth
-ALLOWED_ORIGINS=https://model.earth,https://api.model.earth
+BETTER_AUTH_BASE_URL=https://modelearth.vercel.app
+ALLOWED_ORIGINS=https://model.earth,https://modelearth.vercel.app
 POSTGRES_URL=              # optional — omit for stateless/OAuth-only sessions
 ```

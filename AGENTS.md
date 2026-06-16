@@ -336,7 +336,7 @@ The auth source is configured in **`docker/webroot.yaml`** under the `auth:` blo
 
 ### Cross-origin / incognito design (important)
 
-The chat app's auth origin differs from the page origin (dev: `:3700` vs `:8887`; prod: `api.model.earth` vs `model.earth`). The failure where **auth works in normal Chrome but fails in incognito and Firefox is a third-party-cookie problem, not CORS**:
+The chat app's auth origin differs from the page origin in dev (`:3700` vs `:8887`). In production, both the auth API and the app are served from `modelearth.vercel.app`, so they are same-origin and the cookie issue does not apply. The failure where **auth works in normal Chrome but fails in incognito and Firefox is a third-party-cookie problem, not CORS**:
 
 - A cookie written from a cross-origin `fetch()` response (the OAuth `state` cookie, the session cookie) is a third-party cookie. Incognito Chrome and Firefox (Total Cookie Protection) block it by default; normal Chrome still allows it.
 - Adding `Access-Control-Allow-*` headers cannot fix this — CORS governs reading the response, not storing/sending the cookie.
@@ -350,7 +350,7 @@ The fix is to avoid cross-origin cookie writes/reads entirely:
 
 - **Session persistence:** `auth-modal.js` still falls back to a cross-origin `fetch('/auth/get-session')`, which is blocked in incognito/Firefox on refresh. Stateless mode should instead hand the page a **signed token** stored on the page origin and sent as `Authorization: Bearer …` (bearer headers are not subject to cookie blocking).
 - **The `#auth_user=` blob is unsigned** — cosmetic only (name/avatar). Never treat it as proof of auth; every privileged action must be authorized server-side. A real stateless credential must be a signed JWT/JWE.
-- **Production levers are unset:** `next.config.mjs` `headers()` returns `[]` in production and `crossSubDomainCookies` is disabled in `betterauth/auth.ts`. Because `api.model.earth` and `model.earth` share the registrable domain, enabling cross-subdomain cookies (`Domain=.model.earth`) makes the session **same-site** in production and avoids the third-party-cookie issue there — simpler than the relay for the prod case. The relay/bearer path is still needed for the genuinely cross-site dev setup and any off-domain embed.
+- **Production is same-origin:** `modelearth.vercel.app` serves both the app and the API, so cross-subdomain cookies are not needed there. The relay/bearer path is still needed for the dev setup (`:3700` vs `:8887`) and any off-domain embed.
 
 ### Auth configuration & secrets
 
@@ -360,7 +360,7 @@ Relevant env vars (loaded from `docker/.env`):
 
 ```
 BETTER_AUTH_SECRET        # required, min 32 chars — signs the JWE session
-BETTER_AUTH_BASE_URL      # auth origin, e.g. http://localhost:3700 or https://api.model.earth
+BETTER_AUTH_BASE_URL      # auth origin, e.g. http://localhost:3700 or https://modelearth.vercel.app
 ALLOWED_ORIGINS           # comma-separated trusted origins (required in production)
 AUTH_API_URL              # client override for the auth API base (window.AUTH_API_URL)
 REQUIRE_AUTH              # true/false override of the host-based auth gate

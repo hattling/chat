@@ -48,7 +48,7 @@ api_url_development:    http://localhost:3700/api
 
 When the deploy root **is** the chat repo itself (some Vercel deployments), the
 `/chat` prefix is dropped. The `api_url_*` always points directly at the Node
-server (port 3700 locally, `https://api.model.earth` in production) — never at
+server (port 3700 locally, `https://modelearth.vercel.app` in production) — never at
 a static file server port.
 
 ## API
@@ -73,7 +73,7 @@ openssl rand -base64 32
 
 **Vercel:** go to the project → **Settings → Environment Variables**, add
 `BETTER_AUTH_SECRET` with the generated value. Also set `BETTER_AUTH_BASE_URL`
-to your production URL (e.g. `https://api.model.earth`) and add each provider's
+to your production URL (e.g. `https://modelearth.vercel.app`) and add each provider's
 `CLIENT_ID` / `CLIENT_SECRET` pair there. Vercel env vars override anything in
 `.env` at build/runtime.
 

@@ -28,7 +28,7 @@
     // rather than location.origin so static-served pages reach the right API.
     authApiUrl = isLocalhost
       ? 'http://localhost:3700/api'
-      : 'https://api.model.earth/api';
+      : 'https://modelearth.vercel.app/api';
   }
   window.AUTH_API_URL = authApiUrl;
 
