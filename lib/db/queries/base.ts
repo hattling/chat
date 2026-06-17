@@ -2,14 +2,18 @@ import "server-only";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-// biome-ignore lint: Forbidden non-null assertion.
-// Configure for serverless environment (Vercel)
-const client = postgres(process.env.POSTGRES_URL!, {
-  max: 1, // Limit connection pool for serverless (each instance = 1 connection)
-  prepare: false, // Disable prepared statements (not compatible with serverless)
-  idle_timeout: 20, // Close idle connections after 20 seconds
-  connect_timeout: 10, // Fail fast on connection issues (10 seconds)
-  ssl: "require", // Enable SSL for Supabase connections
-});
+// db is null when POSTGRES_URL is not set (stateless / OAuth-only mode).
+// Callers that need DB must check isDbConfigured before using db.
+export const isDbConfigured = !!process.env.POSTGRES_URL;
 
-export const db = drizzle(client);
+const client = isDbConfigured
+  ? postgres(process.env.POSTGRES_URL!, {
+      max: 1,
+      prepare: false,
+      idle_timeout: 20,
+      connect_timeout: 10,
+      ssl: "require",
+    })
+  : null;
+
+export const db = client ? drizzle(client) : null;

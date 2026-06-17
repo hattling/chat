@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@/lib/db/queries/base";
+import { db, isDbConfigured } from "@/lib/db/queries/base";
 import {
   betterAuthUser,
   betterAuthSession,
@@ -40,15 +40,17 @@ export const auth = betterAuth({
   basePath: "/api/auth",
   baseURL: resolveBaseURL(),
   secret: requireSecret(),
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: {
-      user: betterAuthUser,
-      session: betterAuthSession,
-      account: betterAuthAccount,
-      verification: betterAuthVerification,
-    },
-  }),
+  ...(isDbConfigured && db ? {
+    database: drizzleAdapter(db, {
+      provider: "pg",
+      schema: {
+        user: betterAuthUser,
+        session: betterAuthSession,
+        account: betterAuthAccount,
+        verification: betterAuthVerification,
+      },
+    }),
+  } : {}),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

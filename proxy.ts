@@ -119,17 +119,9 @@ export async function proxy(request: NextRequest) {
   } else if (authFlag === "false") {
     authRequired = false;
   } else {
-    const host =
-      request.headers.get("x-forwarded-host") ??
-      request.headers.get("host") ??
-      "";
-    const hostname = host.split(":")[0].toLowerCase();
-    authRequired = !(
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "::1" ||
-      hostname === "[::1]"
-    );
+    // Default: do not force auth. Set REQUIRE_AUTH=true to gate the whole site.
+    // Individual server components (requireAuth, requireAdmin) handle their own gates.
+    authRequired = false;
   }
   if (!authRequired) {
     return NextResponse.next();

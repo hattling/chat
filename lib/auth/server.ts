@@ -14,10 +14,7 @@ export async function isAuthRequired(reqHeaders?: Headers): Promise<boolean> {
   const flag = process.env.REQUIRE_AUTH?.trim().toLowerCase();
   if (flag === "true") return true;
   if (flag === "false") return false;
-  const headerStore = reqHeaders ?? (await headers());
-  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host") ?? "";
-  const hostname = host.split(":")[0].toLowerCase();
-  return !(hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]");
+  return false; // Default: auth optional. Set REQUIRE_AUTH=true to gate the whole site.
 }
 
 export async function getCurrentUser(): Promise<User | null> {
