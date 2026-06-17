@@ -63,7 +63,7 @@ export async function deleteChatById({ id }: { id: string }) {
     await getDb().delete(message).where(eq(message.chatId, id));
     await getDb().delete(stream).where(eq(stream.chatId, id));
 
-    const [chatsDeleted] = await db
+    const [chatsDeleted] = await getDb()
       .delete(chat)
       .where(eq(chat.id, id))
       .returning();
@@ -78,7 +78,7 @@ export async function deleteChatById({ id }: { id: string }) {
 
 export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   try {
-    const userChats = await db
+    const userChats = await getDb()
       .select({ id: chat.id })
       .from(chat)
       .where(eq(chat.user_id, userId));
@@ -93,7 +93,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
     await getDb().delete(message).where(inArray(message.chatId, chatIds));
     await getDb().delete(stream).where(inArray(stream.chatId, chatIds));
 
-    const deletedChats = await db
+    const deletedChats = await getDb()
       .delete(chat)
       .where(eq(chat.user_id, userId))
       .returning();
@@ -122,7 +122,7 @@ export async function getChatsByUserId({
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
-      db
+      getDb()
         .select()
         .from(chat)
         .where(
@@ -136,7 +136,7 @@ export async function getChatsByUserId({
     let filteredChats: Chat[] = [];
 
     if (startingAfter) {
-      const [selectedChat] = await db
+      const [selectedChat] = await getDb()
         .select()
         .from(chat)
         .where(eq(chat.id, startingAfter))
@@ -153,7 +153,7 @@ export async function getChatsByUserId({
         gt(chat.createdAt, selectedChat.createdAt)
       )) as Chat[];
     } else if (endingBefore) {
-      const [selectedChat] = await db
+      const [selectedChat] = await getDb()
         .select()
         .from(chat)
         .where(eq(chat.id, endingBefore))
@@ -219,7 +219,7 @@ export async function getMessagesByChatId({
   id: string;
 }): Promise<DBMessage[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(message)
       .where(eq(message.chatId, id))
@@ -243,13 +243,13 @@ export async function voteMessage({
   type: "up" | "down";
 }) {
   try {
-    const [existingVote] = await db
+    const [existingVote] = await getDb()
       .select()
       .from(vote)
       .where(and(eq(vote.messageId, messageId)));
 
     if (existingVote) {
-      return await db
+      return await getDb()
         .update(vote)
         .set({ isUpvoted: type === "up" })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
@@ -294,7 +294,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    const messagesToDelete = await db
+    const messagesToDelete = await getDb()
       .select({ id: message.id })
       .from(message)
       .where(
@@ -306,13 +306,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     );
 
     if (messageIds.length > 0) {
-      await db
+      await getDb()
         .delete(vote)
         .where(
           and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds))
         );
 
-      return await db
+      return await getDb()
         .delete(message)
         .where(
           and(eq(message.chatId, chatId), inArray(message.id, messageIds))
@@ -352,7 +352,7 @@ export async function updateChatLastContextById({
   context: AppUsage;
 }) {
   try {
-    return await db
+    return await getDb()
       .update(chat)
       .set({ lastContext: context })
       .where(eq(chat.id, chatId));
@@ -374,7 +374,7 @@ export async function getMessageCountByUserId({
       Date.now() - differenceInHours * 60 * 60 * 1000
     );
 
-    const [stats] = await db
+    const [stats] = await getDb()
       .select({ count: count(message.id) })
       .from(message)
       .innerJoin(chat, eq(message.chatId, chat.id))
@@ -404,7 +404,7 @@ export async function createStreamId({
   chatId: string;
 }) {
   try {
-    await db
+    await getDb()
       .insert(stream)
       .values({ id: streamId, chatId, createdAt: new Date() });
   } catch (_error) {
@@ -417,7 +417,7 @@ export async function createStreamId({
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   try {
-    const streamIds = await db
+    const streamIds = await getDb()
       .select({ id: stream.id })
       .from(stream)
       .where(eq(stream.chatId, chatId))

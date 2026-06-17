@@ -26,7 +26,7 @@ export type ModelConfig = {
 // Get all models
 export async function getAllModels(): Promise<DBModelConfig[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(modelConfig)
       .orderBy(
@@ -46,7 +46,7 @@ export async function getModelsByProvider(
   provider: string
 ): Promise<DBModelConfig[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(modelConfig)
       .where(eq(modelConfig.provider, provider))
@@ -66,7 +66,7 @@ export async function getActiveModelsByProvider(
   provider: string
 ): Promise<DBModelConfig[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(modelConfig)
       .where(
@@ -88,7 +88,7 @@ export async function getModelByModelId(
   modelId: string
 ): Promise<DBModelConfig | null> {
   try {
-    const [result] = await db
+    const [result] = await getDb()
       .select()
       .from(modelConfig)
       .where(eq(modelConfig.modelId, modelId))
@@ -108,7 +108,7 @@ export async function getDefaultModelForProvider(
   provider: string
 ): Promise<DBModelConfig | null> {
   try {
-    const [result] = await db
+    const [result] = await getDb()
       .select()
       .from(modelConfig)
       .where(
@@ -132,7 +132,7 @@ export async function createModel(
   try {
     // If this model is being set as default, unset other defaults for the same provider
     if (data.isDefault) {
-      await db
+      await getDb()
         .update(modelConfig)
         .set({ isDefault: false })
         .where(
@@ -143,7 +143,7 @@ export async function createModel(
         );
     }
 
-    const [created] = await db
+    const [created] = await getDb()
       .insert(modelConfig)
       .values({
         modelId: data.modelId,
@@ -179,7 +179,7 @@ export async function updateModel(
 
     // If setting this model as default, unset other defaults for the same provider
     if (data.isDefault === true) {
-      await db
+      await getDb()
         .update(modelConfig)
         .set({ isDefault: false })
         .where(
@@ -190,7 +190,7 @@ export async function updateModel(
         );
     }
 
-    const [updated] = await db
+    const [updated] = await getDb()
       .update(modelConfig)
       .set({
         ...data,
@@ -218,7 +218,7 @@ export async function updateModel(
 // Delete a model
 export async function deleteModel(modelId: string): Promise<DBModelConfig> {
   try {
-    const [deleted] = await db
+    const [deleted] = await getDb()
       .delete(modelConfig)
       .where(eq(modelConfig.modelId, modelId))
       .returning();

@@ -41,7 +41,7 @@ export async function createUsageLog({
   metadata?: Record<string, any>;
 }) {
   try {
-    const [created] = await db
+    const [created] = await getDb()
       .insert(usageLogs)
       .values({
         id: crypto.randomUUID(),
@@ -81,7 +81,7 @@ export async function getUsageLogsByUserId({
   offset?: number;
 }) {
   try {
-    return await db
+    return await getDb()
       .select()
       .from(usageLogs)
       .where(eq(usageLogs.user_id, userId))
@@ -98,7 +98,7 @@ export async function getUsageLogsByUserId({
 
 export async function getUsageLogsByChatId({ chatId }: { chatId: string }) {
   try {
-    return await db
+    return await getDb()
       .select()
       .from(usageLogs)
       .where(eq(usageLogs.chat_id, chatId))
@@ -130,7 +130,7 @@ export async function getUsageLogsByDateRange({
       conditions.push(eq(usageLogs.user_id, userId));
     }
 
-    return await db
+    return await getDb()
       .select()
       .from(usageLogs)
       .where(and(...conditions))
@@ -162,7 +162,7 @@ export async function getUsageSummary({
       conditions.push(eq(usageLogs.user_id, userId));
     }
 
-    const [summary] = await db
+    const [summary] = await getDb()
       .select({
         totalCalls: count(usageLogs.id),
         totalInputTokens: usageLogs.inputTokens,
@@ -205,7 +205,7 @@ export async function checkRateLimit({
         : now.getTime() - 24 * 60 * 60 * 1000
     );
 
-    const [record] = await db
+    const [record] = await getDb()
       .select()
       .from(rateLimitTracking)
       .where(
@@ -264,7 +264,7 @@ export async function incrementRateLimit({
     );
 
     // Check if a record exists for this period
-    const [existing] = await db
+    const [existing] = await getDb()
       .select()
       .from(rateLimitTracking)
       .where(
@@ -279,7 +279,7 @@ export async function incrementRateLimit({
 
     if (existing) {
       // Update existing record
-      const [updated] = await db
+      const [updated] = await getDb()
         .update(rateLimitTracking)
         .set({
           requestCount: (existing.requestCount || 0) + 1,
@@ -290,7 +290,7 @@ export async function incrementRateLimit({
     }
 
     // Create new record
-    const [created] = await db
+    const [created] = await getDb()
       .insert(rateLimitTracking)
       .values({
         id: crypto.randomUUID(),
@@ -327,7 +327,7 @@ export async function resetRateLimitForUser({
       conditions.push(eq(rateLimitTracking.agentType, agentType));
     }
 
-    return await db
+    return await getDb()
       .delete(rateLimitTracking)
       .where(and(...conditions))
       .returning();

@@ -12,7 +12,7 @@ export async function getAdminConfig({
   configKey: string;
 }): Promise<AdminConfig | null> {
   try {
-    const [config] = await db
+    const [config] = await getDb()
       .select()
       .from(adminConfig)
       .where(eq(adminConfig.configKey, configKey));
@@ -27,7 +27,7 @@ export async function getAdminConfig({
 
 export async function getAllAdminConfigs(): Promise<AdminConfig[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(adminConfig)
       .orderBy(asc(adminConfig.configKey));
@@ -67,7 +67,7 @@ export async function updateAdminConfig({
   }
 
   try {
-    const [updated] = await db
+    const [updated] = await getDb()
       .update(adminConfig)
       .set({
         configData,
@@ -112,7 +112,7 @@ export async function createAdminConfig({
   }
 
   try {
-    const [created] = await db
+    const [created] = await getDb()
       .insert(adminConfig)
       .values({
         id: crypto.randomUUID(),
@@ -416,7 +416,7 @@ export function validateAgentConfigData(
 // Function to get all agent configurations
 export async function getAllAgentConfigs(): Promise<AdminConfig[]> {
   try {
-    const result = await db
+    const result = await getDb()
       .select()
       .from(adminConfig)
       .orderBy(asc(adminConfig.configKey));
@@ -489,7 +489,7 @@ export async function deleteAdminConfig({ configKey }: { configKey: string }) {
   }
 
   try {
-    const [deleted] = await db
+    const [deleted] = await getDb()
       .delete(adminConfig)
       .where(eq(adminConfig.configKey, configKey))
       .returning();
@@ -561,7 +561,7 @@ export async function patchAdminConfig({
     }
 
     // Update with merged data
-    const [updated] = await db
+    const [updated] = await getDb()
       .update(adminConfig)
       .set({
         configData: mergedConfigData,
@@ -672,7 +672,7 @@ export async function getAdminConfigSummary(): Promise<any> {
         }
 
         // Fetch models from model_config table instead of admin_config JSONB
-        const models = await db
+        const models = await getDb()
           .select()
           .from(modelConfig)
           .where(eq(modelConfig.provider, provider));

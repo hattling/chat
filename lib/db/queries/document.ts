@@ -27,14 +27,14 @@ export async function saveDocument({
 }) {
   try {
     // Get the next version number for this document
-    const versionResult = await db
+    const versionResult = await getDb()
       .select({ maxVersion: max(document.version_number) })
       .from(document)
       .where(eq(document.id, id));
 
     const nextVersion = (versionResult[0]?.maxVersion || 0) + 1;
 
-    return await db
+    return await getDb()
       .insert(document)
       .values({
         id,
@@ -56,7 +56,7 @@ export async function saveDocument({
 
 export async function getDocumentsById({ id }: { id: string }) {
   try {
-    const documents = await db
+    const documents = await getDb()
       .select()
       .from(document)
       .where(eq(document.id, id))
@@ -73,7 +73,7 @@ export async function getDocumentsById({ id }: { id: string }) {
 
 export async function getDocumentById({ id }: { id: string }) {
   try {
-    const [selectedDocument] = await db
+    const [selectedDocument] = await getDb()
       .select()
       .from(document)
       .where(eq(document.id, id))
@@ -96,7 +96,7 @@ export async function getDocumentByIdAndVersion({
   version: number;
 }) {
   try {
-    const [selectedDocument] = await db
+    const [selectedDocument] = await getDb()
       .select()
       .from(document)
       .where(and(eq(document.id, id), eq(document.version_number, version)));
@@ -112,7 +112,7 @@ export async function getDocumentByIdAndVersion({
 
 export async function getDocumentVersions({ id }: { id: string }) {
   try {
-    const versions = await db
+    const versions = await getDb()
       .select()
       .from(document)
       .where(eq(document.id, id))
@@ -129,7 +129,7 @@ export async function getDocumentVersions({ id }: { id: string }) {
 
 export async function getDocumentsByChat({ chatId }: { chatId: string }) {
   try {
-    const documents = await db
+    const documents = await getDb()
       .select()
       .from(document)
       .where(eq(document.chat_id, chatId))
@@ -151,7 +151,7 @@ export async function getLatestDocumentVersionsByChat({
 }) {
   try {
     // Get only the latest version of each document in the chat
-    const documents = await db
+    const documents = await getDb()
       .select({
         id: document.id,
         title: document.title,
@@ -191,7 +191,7 @@ export async function getLatestDocumentVersionsByChat({
 export async function getLastDocumentInChat({ chatId }: { chatId: string }) {
   try {
     // Get the most recently created document with full content
-    const [lastDocument] = await db
+    const [lastDocument] = await getDb()
       .select()
       .from(document)
       .where(eq(document.chat_id, chatId))
@@ -215,7 +215,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    await db
+    await getDb()
       .delete(suggestion)
       .where(
         and(
@@ -224,7 +224,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
         )
       );
 
-    return await db
+    return await getDb()
       .delete(document)
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
       .returning();
@@ -257,7 +257,7 @@ export async function getSuggestionsByDocumentId({
   documentId: string;
 }) {
   try {
-    return await db
+    return await getDb()
       .select()
       .from(suggestion)
       .where(and(eq(suggestion.documentId, documentId)));

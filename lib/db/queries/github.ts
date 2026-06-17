@@ -19,7 +19,7 @@ export async function getGithubRepositoriesByUserId({
       conditions.push(eq(githubRepositories.isActive, true));
     }
 
-    return await db
+    return await getDb()
       .select()
       .from(githubRepositories)
       .where(and(...conditions))
@@ -34,7 +34,7 @@ export async function getGithubRepositoriesByUserId({
 
 export async function getGithubRepositoryById({ id }: { id: string }) {
   try {
-    const [repo] = await db
+    const [repo] = await getDb()
       .select()
       .from(githubRepositories)
       .where(eq(githubRepositories.id, id));
@@ -61,7 +61,7 @@ export async function addGithubRepository({
   defaultBranch?: string;
 }) {
   try {
-    const [created] = await db
+    const [created] = await getDb()
       .insert(githubRepositories)
       .values({
         id: crypto.randomUUID(),
@@ -107,7 +107,7 @@ export async function updateGithubRepository({
       updates.defaultBranch = defaultBranch;
     }
 
-    const [updated] = await db
+    const [updated] = await getDb()
       .update(githubRepositories)
       .set(updates)
       .where(eq(githubRepositories.id, id))
@@ -123,7 +123,7 @@ export async function updateGithubRepository({
 
 export async function deleteGithubRepository({ id }: { id: string }) {
   try {
-    const [deleted] = await db
+    const [deleted] = await getDb()
       .delete(githubRepositories)
       .where(eq(githubRepositories.id, id))
       .returning();
