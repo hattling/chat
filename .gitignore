@@ -50,3 +50,6 @@ tsconfig.tsbuildinfo
 __pycache__/
 *.py[cod]
 *.pyo
+
+# Build-generated static assets copied from auth/
+public/auth/
